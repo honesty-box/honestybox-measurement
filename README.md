@@ -1,2 +1,3 @@
 # honestybox-measurement
-Honesty Box Measurement
+
+A framework for measuring things and producing structured results.
