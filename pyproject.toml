@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "honestybox-measurement"
+version = "0.1.0"
+description = ""
+authors = ["Stuart Dines <me@stuartdines.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.0"
+tox = "^3.13"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py27,py36,py37
+skipsdist = True
+
+[testenv]
+deps = pytest >= 3.0.0, <4
+commands = pytest
+"""
