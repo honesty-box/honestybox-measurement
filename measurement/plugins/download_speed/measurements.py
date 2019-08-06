@@ -21,6 +21,13 @@ LATENCY_OUTPUT_REGEX = re.compile(
     r"= (?P<minimum_latency>[\d.].*)/(?P<average_latency>[\d.].*)/(?P<maximum_latency>[\d.].*)/(?P<median_deviation>[\d.].*) "
 )
 
+WGET_ERRORS = {
+    "wget-err": "wget had an unknown error.",
+    "wget-split": "wget attempted to split the result but it was in an unanticipated format.",
+    "wget-regex": "wget attempted get the known regex format and failed.",
+    "wget-storage-unit": "wget could not process the storage unit.",
+}
+
 
 class DownloadSpeedMeasurement(BaseMeasurement):
     """A measurement designed to test download speed."""
@@ -100,72 +107,59 @@ class DownloadSpeedMeasurement(BaseMeasurement):
         )
 
         if wget_out.stderr:
-            return DownloadSpeedMeasurementResult(
-                id=self.id,
-                url=self.url,
-                errors=[
-                    Error(
-                        key="wget-err",
-                        description="wget had an error.",
-                        traceback=wget_out.stderr,
-                    )
-                ],
-            )
+            return self._get_wget_error("wget-err", wget_out)
 
         try:
             wget_data = wget_out.stdout.decode("utf-8").split("\n")[-3]
         except KeyError:
-            return DownloadSpeedMeasurementResult(
-                id=self.id,
-                url=self.url,
-                errors=[
-                    Error(
-                        key="wget-split",
-                        description="wget attempted to split the result but it was in an unanticipated format.",
-                        traceback=wget_out,
-                    )
-                ],
-            )
+            return self._get_wget_error("wget-split", wget_out)
 
         matches = WGET_OUTPUT_REGEX.search(wget_data)
         match_data = matches.groupdict()
 
         if len(match_data.keys()) != 3:
-            return DownloadSpeedMeasurementResult(
-                id=self.id,
-                url=self.url,
-                errors=[
-                    Error(
-                        key="wget-regex",
-                        description="wget attempted get the known regex format and failed.",
-                        traceback=wget_out,
-                    )
-                ],
-            )
+            return self._get_wget_error("wget-regex", wget_out)
 
         try:
             storage_unit = NetworkUnit(
                 match_data.get("download_unit").replace("MB/s", "Mbit/s")
             )
         except ValueError:
-            return DownloadSpeedMeasurementResult(
-                id=self.id,
-                url=self.url,
-                errors=[
-                    Error(
-                        key="wget-storage-unit",
-                        description="wget could not process the storage unit.",
-                        traceback=wget_out,
-                    )
-                ],
-            )
+            return self._get_wget_error("wget-storage-unit", wget_out)
+
+        try:
+            download_rate = float(match_data.get("download_rate"))
+        except (TypeError, ValueError):
+            return self._get_wget_error("wget-download-rate", wget_out)
+
+        try:
+            download_size = float(match_data.get("download_size"))
+        except (TypeError, ValueError):
+            return self._get_wget_error("wget-download-size", wget_out)
 
         return DownloadSpeedMeasurementResult(
             id=self.id,
             url=self.url,
             download_rate_unit=storage_unit,
-            download_rate=float(match_data.get("download_rate")),  # TODO catch errors
-            download_size=float(match_data.get("download_size")),  # TODO catch errors
+            download_rate=download_rate,
+            download_size=download_size,
             download_size_unit=StorageUnit.megabit,
             errors=[],
+        )
+
+    def _get_wget_error(self, key: str, traceback: str) -> DownloadSpeedMeasurementResult:
+        return DownloadSpeedMeasurementResult(
+            id=self.id,
+            url=self.url,
+            download_rate_unit=None,
+            download_rate=None,
+            download_size=None,
+            download_size_unit=None,
+            errors=[
+                Error(
+                    key=key,
+                    description=WGET_ERRORS.get(key, ''),
+                    traceback=traceback,
+                )
+            ],
         )
