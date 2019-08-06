@@ -15,7 +15,7 @@ from measurement.results import Error
 from measurement.units import NetworkUnit, StorageUnit
 
 WGET_OUTPUT_REGEX = re.compile(
-    r"((?P<download_rate>[\d.]*)\s(?P<download_unit>.*)).*[(?P<download_size>\d*)]"
+    r"\((?P<download_rate>[\d.]*)\s(?P<download_unit>.*)\).*\[(?P<download_size>\d*)\]"
 )
 LATENCY_OUTPUT_REGEX = re.compile(
     r"= (?P<minimum_latency>[\d.].*)/(?P<average_latency>[\d.].*)/(?P<maximum_latency>[\d.].*)/(?P<median_deviation>[\d.].*) "
