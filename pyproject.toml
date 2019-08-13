@@ -3,6 +3,9 @@ name = "honestybox-measurement"
 version = "0.1.0"
 description = ""
 authors = ["Stuart Dines <me@stuartdines.com>"]
+packages = [
+    { include = "measurement" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
