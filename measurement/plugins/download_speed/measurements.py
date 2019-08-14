@@ -1,9 +1,8 @@
 import re
 import subprocess
-import typing
-from urllib.parse import urlparse
 
 import validators
+from six.moves.urllib.parse import urlparse
 from validators import ValidationFailure
 
 from measurement.measurements import BaseMeasurement
@@ -32,7 +31,7 @@ WGET_ERRORS = {
 class DownloadSpeedMeasurement(BaseMeasurement):
     """A measurement designed to test download speed."""
 
-    def __init__(self, id: str, url: str, count: int = 4) -> None:
+    def __init__(self, id, url, count=4):
         """Initialisation of a download speed measurement.
 
         :param id: A unique identifier for the measurement.
@@ -46,33 +45,29 @@ class DownloadSpeedMeasurement(BaseMeasurement):
         validated_url = validators.url(url)
 
         if isinstance(validated_url, ValidationFailure):
-            raise ValueError(f"`{url}` is not a valid url")
+            raise ValueError("`{url}` is not a valid url".format(url=url))
 
         if count < 0:
             raise ValueError(
-                f"A value of {count} was provided for the number of pings. This must be a positive "
-                f"integer or `0` to turn off the ping."
+                "A value of {count} was provided for the number of pings. This must be a positive "
+                "integer or `0` to turn off the ping.".format(count=count)
             )
 
         self.url = url
         self.count = count
 
-    def measure(
-        self
-    ) -> typing.List[
-        typing.Union[DownloadSpeedMeasurementResult, LatencyMeasurementResult]
-    ]:
+    def measure(self):
         """Perform the measurement."""
         results = [self._get_wget_results()]
         if self.count > 0:
             results.append(self._get_latency_results())
         return results
 
-    def _get_latency_results(self) -> LatencyMeasurementResult:
+    def _get_latency_results(self):
         """Perform the latency measurement."""
         host = urlparse(self.url).netloc
         latency_out = subprocess.check_output(
-            ["ping", "-c", f"{self.count}", host],
+            ["ping", "-c", "{count}".format(count=self.count), host],
             stderr=subprocess.STDOUT,
             universal_newlines=True,
         )
@@ -98,10 +93,10 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             errors=[],
         )
 
-    def _get_wget_results(self) -> DownloadSpeedMeasurementResult:
+    def _get_wget_results(self):
         """Perform the download measurement."""
         wget_out = subprocess.run(
-            f"wget --tries=2 -O /dev/null {self.url} 2>&1",
+            "wget --tries=2 -O /dev/null {url} 2>&1".format(url=self.url),
             shell=True,
             stdout=subprocess.PIPE,
         )
@@ -147,7 +142,7 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             errors=[],
         )
 
-    def _get_wget_error(self, key: str, traceback: str) -> DownloadSpeedMeasurementResult:
+    def _get_wget_error(self, key, traceback):
         return DownloadSpeedMeasurementResult(
             id=self.id,
             url=self.url,
@@ -157,9 +152,7 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             download_size_unit=None,
             errors=[
                 Error(
-                    key=key,
-                    description=WGET_ERRORS.get(key, ''),
-                    traceback=traceback,
+                    key=key, description=WGET_ERRORS.get(key, ""), traceback=traceback
                 )
             ],
         )

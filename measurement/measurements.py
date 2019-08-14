@@ -1,8 +1,3 @@
-import typing
-
-from measurement.results import MeasurementResult
-
-
 class BaseMeasurement(object):
     """Interface for creating measurements.
 
@@ -10,7 +5,7 @@ class BaseMeasurement(object):
     interface for creating new measurement types.
     """
 
-    def __init__(self, id: str):
+    def __init__(self, id):
         """Initialisation of a base measurement
 
         :param id: A unique identifier for the measurement.
@@ -18,7 +13,7 @@ class BaseMeasurement(object):
         super().__init__()
         self.id = id
 
-    def measure(self) -> typing.List[typing.Type[MeasurementResult]]:
+    def measure(self):
         """Perform the measurement and return the measurement results.
         """
         raise NotImplementedError
