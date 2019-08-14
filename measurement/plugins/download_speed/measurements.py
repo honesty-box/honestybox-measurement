@@ -40,7 +40,7 @@ class DownloadSpeedMeasurement(BaseMeasurement):
         :param count: A positive integer describing the number of
         pings to perform. Defaults to 4.
         """
-        super().__init__(id=id)
+        super(DownloadSpeedMeasurement, self).__init__(id=id)
 
         validated_url = validators.url(url)
 

@@ -10,7 +10,7 @@ class BaseMeasurement(object):
 
         :param id: A unique identifier for the measurement.
         """
-        super().__init__()
+        super(BaseMeasurement, self).__init__()
         self.id = id
 
     def measure(self):
