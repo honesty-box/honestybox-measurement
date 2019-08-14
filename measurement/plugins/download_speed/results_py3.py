@@ -17,7 +17,7 @@ class DownloadSpeedMeasurementResult(MeasurementResult):
     to describe the `download_size`.
     :param download_rate: The rate measured in the download speed
     measurement excluding units:
-    :param download_rate_units: The unit of measurement used to
+    :param download_rate_unit: The unit of measurement used to
     measure the `download_rate`.
     """
 

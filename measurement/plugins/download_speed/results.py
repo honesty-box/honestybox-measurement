@@ -7,9 +7,9 @@ if six.PY3:
 else:
     DownloadSpeedMeasurementResult = collections.namedtuple(
         "DownloadSpeedMeasurementResult",
-        "id errors url download_size download_size_unit download_rate download_rate_units",
+        "id errors url download_size download_size_unit download_rate download_rate_unit",
     )
     LatencyMeasurementResult = collections.namedtuple(
         "LatencyMeasurementResult",
-        "id errors host minimum_latency maximum_latency median_deviation",
+        "id errors host minimum_latency average_latency maximum_latency median_deviation",
     )
