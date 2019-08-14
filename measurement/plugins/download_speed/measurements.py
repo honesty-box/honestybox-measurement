@@ -1,6 +1,6 @@
 import re
-import subprocess
 
+import six
 import validators
 from six.moves.urllib.parse import urlparse
 from validators import ValidationFailure
@@ -66,12 +66,10 @@ class DownloadSpeedMeasurement(BaseMeasurement):
     def _get_latency_results(self):
         """Perform the latency measurement."""
         host = urlparse(self.url).netloc
-        latency_out = subprocess.check_output(
-            ["ping", "-c", "{count}".format(count=self.count), host],
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
+        latency_out = six.moves.getoutput(
+            "ping -c {count} {host}".format(count=self.count, host=host)
         )
-        latency_data = latency_out.split("\n")[-2]
+        latency_data = latency_out.split("\n")[-1]
         matches = LATENCY_OUTPUT_REGEX.search(latency_data)
         match_data = matches.groupdict()
 
@@ -95,17 +93,12 @@ class DownloadSpeedMeasurement(BaseMeasurement):
 
     def _get_wget_results(self):
         """Perform the download measurement."""
-        wget_out = subprocess.run(
-            "wget --tries=2 -O /dev/null {url} 2>&1".format(url=self.url),
-            shell=True,
-            stdout=subprocess.PIPE,
+        wget_out = six.moves.getoutput(
+            "wget --tries=2 -O /dev/null {url} 2>&1".format(url=self.url)
         )
 
-        if wget_out.stderr:
-            return self._get_wget_error("wget-err", wget_out)
-
         try:
-            wget_data = wget_out.stdout.decode("utf-8").split("\n")[-3]
+            wget_data = wget_out.split("\n")[-2]
         except KeyError:
             return self._get_wget_error("wget-split", wget_out)
 
