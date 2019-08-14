@@ -441,8 +441,8 @@ python-versions = ">=2.7"
 version = "0.5.2"
 
 [metadata]
-content-hash = "d70d9a6f8456624fc4bf71ab318fa144494af90082afb3d2c52c0cf195f19a7f"
-python-versions = ">=3.6 || ^2.7"
+content-hash = "6df966b2ab29ac24d86f069afea5672ca85fa1cf9568c127800ada51b83ecf91"
+python-versions = ">=3.5 || ^2.7"
 
 [metadata.hashes]
 appdirs = ["9e5896d1372858f8dd3344faf4e5014d21849c756c8d5701f78f8a103b372d92", "d8b24664561d0d34ddfaec54636d502d7cea6e29c3eaf68f3df6180863e2166e"]
