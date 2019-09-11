@@ -76,7 +76,7 @@ class DownloadSpeedMeasurement(BaseMeasurement):
         results = [self._get_wget_results(self.url)]
         if self.count > 0:
             host = urlparse(self.url).netloc
-            results.append(self._get_latency_results(host))
+            results.append(self._get_latency_results(host, self.count))
         return results
 
     def _get_latency_results(self, host, count):
@@ -182,10 +182,10 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             errors=[],
         )
 
-    def _get_wget_error(self, key, traceback):
+    def _get_wget_error(self, key, url, traceback):
         return DownloadSpeedMeasurementResult(
             id=self.id,
-            url=self.url,
+            url=url,
             download_rate_unit=None,
             download_rate=None,
             download_size=None,
@@ -194,5 +194,20 @@ class DownloadSpeedMeasurement(BaseMeasurement):
                 Error(
                     key=key, description=WGET_ERRORS.get(key, ""), traceback=traceback
                 )
-            ],
+            ]
+        )
+
+    def _get_latency_error(self, key, host, traceback):
+        return LatencyMeasurementResult(
+            id=self.id,
+            host=host,
+            minimum_latency=None,
+            average_latency=None,
+            maximum_latency=None,
+            median_deviation=None,
+            errors=[
+                Error(
+                    key=key, description=LATENCY_ERRORS.get(key, ""), traceback=traceback
+                )
+            ]
         )
