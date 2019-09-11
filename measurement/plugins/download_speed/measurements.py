@@ -2,6 +2,7 @@ import re
 
 import six
 import validators
+import subprocess
 from six.moves.urllib.parse import urlparse
 from validators import ValidationFailure
 
@@ -46,7 +47,7 @@ LATENCY_ERRORS = {
 class DownloadSpeedMeasurement(BaseMeasurement):
     """A measurement designed to test download speed."""
 
-    def __init__(self, id, url, count=4):
+    def __init__(self, id, url, count=4, download_timeout=180):
         """Initialisation of a download speed measurement.
 
         :param id: A unique identifier for the measurement.
@@ -54,6 +55,8 @@ class DownloadSpeedMeasurement(BaseMeasurement):
         measurement.
         :param count: A positive integer describing the number of
         pings to perform. Defaults to 4.
+        :param download_timeout: An integer describing the number of
+        seconds for the test to last. 0 means no timeout.
         """
         super(DownloadSpeedMeasurement, self).__init__(id=id)
 
@@ -68,12 +71,19 @@ class DownloadSpeedMeasurement(BaseMeasurement):
                 "integer or `0` to turn off the ping.".format(count=count)
             )
 
+        if download_timeout < 0:
+            raise ValueError(
+                "A value of {count} was provided for the timeout. This must be a positive "
+                "integer or `0` to turn off the timeout.".format(count=count)
+            )
+
         self.url = url
         self.count = count
+        self.download_timeout = download_timeout
 
     def measure(self):
         """Perform the measurement."""
-        results = [self._get_wget_results(self.url)]
+        results = [self._get_wget_results(self.url, self.download_timeout)]
         if self.count > 0:
             host = urlparse(self.url).netloc
             results.append(self._get_latency_results(host, self.count))
@@ -132,17 +142,27 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             errors=[],
         )
 
-    def _get_wget_results(self, url):
+    def _get_wget_results(self, url, download_timeout):
+        """Perform the download measurement."""
         if url is None:
             return self._get_wget_error("wget-no-server", url, traceback=None)
 
-        """Perform the download measurement."""
-        wget_out = six.moves.getoutput(
-            "wget --tries=2 -O /dev/null {url} 2>&1".format(url=url)
-        )
-
+        if (download_timeout == 0):
+            download_timeout = None
         try:
-            wget_data = wget_out.split("\n")[-2]
+            wget_out = subprocess.run(
+                ["wget", "--tries=2", "-O", "/dev/null", url],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=download_timeout,
+            )
+        except subprocess.TimeoutExpired:
+            return self._get_wget_error("wget-timeout", url, traceback=None)
+
+        if wget_out.returncode != 0:
+            return self._get_wget_error("wget-err", url, traceback=wget_out.stderr)
+        try:
+            wget_data = wget_out.stderr.decode().split("\n")[-3]
         except KeyError:
             return self._get_wget_error("wget-split", url, traceback=wget_out)
         matches = WGET_OUTPUT_REGEX.search(wget_data)
