@@ -25,6 +25,21 @@ WGET_ERRORS = {
     "wget-split": "wget attempted to split the result but it was in an unanticipated format.",
     "wget-regex": "wget attempted get the known regex format and failed.",
     "wget-storage-unit": "wget could not process the storage unit.",
+    "wget-download-rate": "wget could not process the download rate.",
+    "wget-download-size": "wget could not process the download size.",
+    "wget-no-server": "No closest server could be resolved.",
+    "wget-timeout": "Measurement request timed out.",
+}
+LATENCY_ERRORS = {
+    "ping-err": "ping had an unknown error",
+    "ping-split": "ping attempted to split the result but it was in an unanticipated format",
+    "ping-regex": "ping attempted get the known regex format and failed.",
+    "ping-minimum-latency": "ping could not process the minimum latency.",
+    "ping-maximum-latency": "ping could not process the maximum latency.",
+    "ping-average-latency": "ping could not process the average latency.",
+    "ping-median-deviation": "ping could not process the median deviation.",
+    "ping-no-server": "No closest server could be resolved.",
+    "ping-timeout": "Measurement request timed out.",
 }
 
 
@@ -58,76 +73,108 @@ class DownloadSpeedMeasurement(BaseMeasurement):
 
     def measure(self):
         """Perform the measurement."""
-        results = [self._get_wget_results()]
+        results = [self._get_wget_results(self.url)]
         if self.count > 0:
-            results.append(self._get_latency_results())
+            host = urlparse(self.url).netloc
+            results.append(self._get_latency_results(host))
         return results
 
-    def _get_latency_results(self):
+    def _get_latency_results(self, host, count):
         """Perform the latency measurement."""
-        host = urlparse(self.url).netloc
+        if host is None:
+            return self._get_latency_error("ping-no-server", host, traceback=None)
+
         latency_out = six.moves.getoutput(
-            "ping -c {count} {host}".format(count=self.count, host=host)
+            "ping -c {count} {host}".format(count=count, host=host)
         )
-        latency_data = latency_out.split("\n")[-1]
+        try:
+            latency_data = latency_out.split("\n")[-1]
+        except KeyError:
+            return self._get_latency_error("ping-split", host, traceback=latency_out)
+
         matches = LATENCY_OUTPUT_REGEX.search(latency_data)
+        try:
+            match_data = matches.groupdict()
+        except AttributeError:
+            return self._get_latency_error("ping-regex", host, traceback=latency_out)
+
+        if len(match_data.keys()) != 4:
+            return self._get_latency_error("ping-regex", host, traceback=latency_out)
         match_data = matches.groupdict()
+
+        try:
+            maximum_latency = float(match_data.get("maximum_latency"))
+        except (TypeError, ValueError):
+            return self._get_latency_error("ping-maximum-latency", host, traceback=latency_out)
+
+        try:
+            minimum_latency = float(match_data.get("minimum_latency"))
+        except (TypeError, ValueError):
+            return self._get_latency_error("ping-minimum-latency", host, traceback=latency_out)
+
+        try:
+            average_latency = float(match_data.get("average_latency"))
+        except (TypeError, ValueError):
+            return self._get_latency_error("ping-average-latency", host, traceback=latency_out)
+
+        try:
+            median_deviation = float(match_data.get("median_deviation"))
+        except (TypeError, ValueError):
+            return self._get_latency_error("ping-median_deviation", host, traceback=latency_out)
 
         return LatencyMeasurementResult(
             id=self.id,
             host=host,
-            maximum_latency=float(
-                match_data.get("maximum_latency")
-            ),  # TODO catch errors
-            minimum_latency=float(
-                match_data.get("minimum_latency")
-            ),  # TODO catch errors
-            average_latency=float(
-                match_data.get("average_latency")
-            ),  # TODO catch errors
-            median_deviation=float(
-                match_data.get("median_deviation")
-            ),  # TODO catch errors
+            minimum_latency=minimum_latency,
+            average_latency=average_latency,
+            maximum_latency=maximum_latency,
+            median_deviation=median_deviation,
             errors=[],
         )
 
-    def _get_wget_results(self):
+    def _get_wget_results(self, url):
+        if url is None:
+            return self._get_wget_error("wget-no-server", url, traceback=None)
+
         """Perform the download measurement."""
         wget_out = six.moves.getoutput(
-            "wget --tries=2 -O /dev/null {url} 2>&1".format(url=self.url)
+            "wget --tries=2 -O /dev/null {url} 2>&1".format(url=url)
         )
 
         try:
             wget_data = wget_out.split("\n")[-2]
         except KeyError:
-            return self._get_wget_error("wget-split", wget_out)
-
+            return self._get_wget_error("wget-split", url, traceback=wget_out)
         matches = WGET_OUTPUT_REGEX.search(wget_data)
-        match_data = matches.groupdict()
+
+        try:
+            match_data = matches.groupdict()
+        except AttributeError:
+            return self._get_wget_error("wget-regex", url, traceback=wget_out)
 
         if len(match_data.keys()) != 3:
-            return self._get_wget_error("wget-regex", wget_out)
+            return self._get_wget_error("wget-regex", url, traceback=wget_out)
 
         try:
             storage_unit = NetworkUnit(
                 match_data.get("download_unit").replace("MB/s", "Mbit/s")
             )
         except ValueError:
-            return self._get_wget_error("wget-storage-unit", wget_out)
+            return self._get_wget_error("wget-storage-unit", url, traceback=wget_out)
 
         try:
             download_rate = float(match_data.get("download_rate"))
         except (TypeError, ValueError):
-            return self._get_wget_error("wget-download-rate", wget_out)
+            return self._get_wget_error("wget-download-rate", url, traceback=wget_out)
 
         try:
             download_size = float(match_data.get("download_size"))
         except (TypeError, ValueError):
-            return self._get_wget_error("wget-download-size", wget_out)
+            return self._get_wget_error("wget-download-size", url, traceback=wget_out)
 
         return DownloadSpeedMeasurementResult(
             id=self.id,
-            url=self.url,
+            url=url,
             download_rate_unit=storage_unit,
             download_rate=download_rate,
             download_size=download_size,
