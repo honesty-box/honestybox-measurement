@@ -99,7 +99,7 @@ class DownloadSpeedMeasurement(BaseMeasurement):
         )
         try:
             latency_data = latency_out.split("\n")[-1]
-        except KeyError:
+        except IndexError:
             return self._get_latency_error("ping-split", host, traceback=latency_out)
 
         matches = LATENCY_OUTPUT_REGEX.search(latency_data)
@@ -115,22 +115,30 @@ class DownloadSpeedMeasurement(BaseMeasurement):
         try:
             maximum_latency = float(match_data.get("maximum_latency"))
         except (TypeError, ValueError):
-            return self._get_latency_error("ping-maximum-latency", host, traceback=latency_out)
+            return self._get_latency_error(
+                "ping-maximum-latency", host, traceback=latency_out
+            )
 
         try:
             minimum_latency = float(match_data.get("minimum_latency"))
         except (TypeError, ValueError):
-            return self._get_latency_error("ping-minimum-latency", host, traceback=latency_out)
+            return self._get_latency_error(
+                "ping-minimum-latency", host, traceback=latency_out
+            )
 
         try:
             average_latency = float(match_data.get("average_latency"))
         except (TypeError, ValueError):
-            return self._get_latency_error("ping-average-latency", host, traceback=latency_out)
+            return self._get_latency_error(
+                "ping-average-latency", host, traceback=latency_out
+            )
 
         try:
             median_deviation = float(match_data.get("median_deviation"))
         except (TypeError, ValueError):
-            return self._get_latency_error("ping-median_deviation", host, traceback=latency_out)
+            return self._get_latency_error(
+                "ping-median_deviation", host, traceback=latency_out
+            )
 
         return LatencyMeasurementResult(
             id=self.id,
@@ -147,7 +155,7 @@ class DownloadSpeedMeasurement(BaseMeasurement):
         if url is None:
             return self._get_wget_error("wget-no-server", url, traceback=None)
 
-        if (download_timeout == 0):
+        if download_timeout == 0:
             download_timeout = None
         try:
             wget_out = subprocess.run(
@@ -163,7 +171,7 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             return self._get_wget_error("wget-err", url, traceback=wget_out.stderr)
         try:
             wget_data = wget_out.stderr.decode().split("\n")[-3]
-        except KeyError:
+        except IndexError:
             return self._get_wget_error("wget-split", url, traceback=wget_out)
         matches = WGET_OUTPUT_REGEX.search(wget_data)
 
@@ -214,7 +222,7 @@ class DownloadSpeedMeasurement(BaseMeasurement):
                 Error(
                     key=key, description=WGET_ERRORS.get(key, ""), traceback=traceback
                 )
-            ]
+            ],
         )
 
     def _get_latency_error(self, key, host, traceback):
@@ -227,7 +235,9 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             median_deviation=None,
             errors=[
                 Error(
-                    key=key, description=LATENCY_ERRORS.get(key, ""), traceback=traceback
+                    key=key,
+                    description=LATENCY_ERRORS.get(key, ""),
+                    traceback=traceback,
                 )
-            ]
+            ],
         )
