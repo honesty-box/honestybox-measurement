@@ -113,9 +113,6 @@ class DownloadSpeedMeasurement(BaseMeasurement):
         if host is None:
             return self._get_latency_error("ping-no-server", host, traceback=None)
 
-        latency_out = six.moves.getoutput(
-            "ping -c {count} {host}".format(count=count, host=host)
-        )
         latency_out = subprocess.run(
             ["ping", "-c", "{c}".format(c=count), "{h}".format(h=host)],
             stdout=subprocess.PIPE,
