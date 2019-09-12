@@ -5,12 +5,8 @@ import subprocess
 
 from measurement.results import Error
 from measurement.plugins.download_speed.measurements import WGET_OUTPUT_REGEX
-from measurement.plugins.download_speed.measurements import (
-    DownloadSpeedMeasurement,
-)
-from measurement.plugins.download_speed.measurements import (
-    WGET_ERRORS, LATENCY_ERRORS
-)
+from measurement.plugins.download_speed.measurements import DownloadSpeedMeasurement
+from measurement.plugins.download_speed.measurements import WGET_ERRORS, LATENCY_ERRORS
 from measurement.plugins.download_speed.results import (
     DownloadSpeedMeasurementResult,
     LatencyMeasurementResult,
@@ -37,10 +33,7 @@ class DownloadSpeedMeasurementCreationTestCase(TestCase):
 
     def test_invalid_hosts(self, *args):
         self.assertRaises(
-            ValueError,
-            DownloadSpeedMeasurement,
-            "test",
-            ["invalid..host"],
+            ValueError, DownloadSpeedMeasurement, "test", ["invalid..host"]
         )
 
     def test_invalid_count(self, *args):
@@ -49,7 +42,7 @@ class DownloadSpeedMeasurementCreationTestCase(TestCase):
             DownloadSpeedMeasurement,
             "test",
             ["http://validfakeurl.com"],
-            count="invalid-count"
+            count="invalid-count",
         )
 
     def test_invalid_negative_count(self, *args):
@@ -58,14 +51,16 @@ class DownloadSpeedMeasurementCreationTestCase(TestCase):
             DownloadSpeedMeasurement,
             "test",
             ["http://validfakeurl.com"],
-            count=-2
+            count=-2,
         )
 
 
 class DownloadSpeedMeasurementWgetTestCase(TestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.measurement = DownloadSpeedMeasurement("test", ["https://validfakehost.com/test"])
+        self.measurement = DownloadSpeedMeasurement(
+            "test", ["https://validfakehost.com/test"]
+        )
         self.valid_wget = DownloadSpeedMeasurementResult(
             id="test",
             url="http://validfakehost.com/test",
@@ -116,7 +111,9 @@ class DownloadSpeedMeasurementWgetTestCase(TestCase):
         )
         self.assertEqual(
             self.valid_wget,
-            self.measurement._get_wget_results("http://validfakehost.com/test", self.measurement.download_timeout)
+            self.measurement._get_wget_results(
+                "http://validfakehost.com/test", self.measurement.download_timeout
+            ),
         )
 
     @mock.patch("subprocess.run")
@@ -129,7 +126,9 @@ class DownloadSpeedMeasurementWgetTestCase(TestCase):
         )
         self.assertEqual(
             self.invalid_wget,
-            self.measurement._get_wget_results("http://validfakehost.com/test", self.measurement.download_timeout)
+            self.measurement._get_wget_results(
+                "http://validfakehost.com/test", self.measurement.download_timeout
+            ),
         )
 
     @mock.patch("subprocess.run")
@@ -142,14 +141,18 @@ class DownloadSpeedMeasurementWgetTestCase(TestCase):
         )
         self.assertEqual(
             self.invalid_regex,
-            self.measurement._get_wget_results("http://validfakehost.com/test", self.measurement.download_timeout)
+            self.measurement._get_wget_results(
+                "http://validfakehost.com/test", self.measurement.download_timeout
+            ),
         )
 
 
 class DownloadSpeedMeasurementLatencyTestCase(TestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.measurement = DownloadSpeedMeasurement("test", ["https://validfakehost.com/test"])
+        self.measurement = DownloadSpeedMeasurement(
+            "test", ["https://validfakehost.com/test"]
+        )
         self.valid_latency = LatencyMeasurementResult(
             id="test",
             host="validfakehost.com",
@@ -157,7 +160,7 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
             average_latency=6.133,
             maximum_latency=7.133,
             median_deviation=0.611,
-            errors=[]
+            errors=[],
         )
         self.invalid_latency = LatencyMeasurementResult(
             id="test",
@@ -172,7 +175,7 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
                     description=LATENCY_ERRORS.get("ping-err", ""),
                     traceback="the ping messed up!",
                 )
-            ]
+            ],
         )
         self.invalid_regex = LatencyMeasurementResult(
             id="test",
@@ -187,7 +190,7 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
                     description=LATENCY_ERRORS.get("ping-regex", ""),
                     traceback="\nrtt min/avg/max/mdev = [BAD REGEX] ms\n",
                 )
-            ]
+            ],
         )
 
     @mock.patch("subprocess.run")
@@ -200,7 +203,7 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
         )
         self.assertEqual(
             self.valid_latency,
-            self.measurement._get_latency_results("validfakehost.com")
+            self.measurement._get_latency_results("validfakehost.com"),
         )
 
     @mock.patch("subprocess.run")
@@ -213,7 +216,7 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
         )
         self.assertEqual(
             self.invalid_latency,
-            self.measurement._get_latency_results("validfakehost.com")
+            self.measurement._get_latency_results("validfakehost.com"),
         )
 
     @mock.patch("subprocess.run")
@@ -226,9 +229,8 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
         )
         self.assertEqual(
             self.invalid_regex,
-            self.measurement._get_latency_results("validfakehost.com")
+            self.measurement._get_latency_results("validfakehost.com"),
         )
-
 
 
 class DownloadSpeedMeasurementClosestServerTestCase(TestCase):
@@ -271,12 +273,16 @@ class DownloadSpeedMeasurementClosestServerTestCase(TestCase):
                 maximum_latency=None,
                 median_deviation=None,
                 errors=[],
-            )
+            ),
         ]
         mock_latency_results.side_effect = results
         self.assertEqual(
             self.measurement._find_least_latent_url(self.example_urls),
-            [(self.example_urls[1], results[1]), (self.example_urls[2], results[2]), (self.example_urls[0], results[0])]
+            [
+                (self.example_urls[1], results[1]),
+                (self.example_urls[2], results[2]),
+                (self.example_urls[0], results[0]),
+            ],
         )
 
     @mock.patch.object(DownloadSpeedMeasurement, "_get_latency_results")
@@ -290,10 +296,10 @@ class DownloadSpeedMeasurementClosestServerTestCase(TestCase):
                 maximum_latency=None,
                 median_deviation=None,
                 errors=[],
-            ),
+            )
         ]
         mock_latency_results.side_effect = results
         self.assertEqual(
             self.measurement._find_least_latent_url([self.example_urls[1]]),
-            [(self.example_urls[1], results[0])]
+            [(self.example_urls[1], results[0])],
         )
