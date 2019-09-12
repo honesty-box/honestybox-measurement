@@ -14,6 +14,9 @@ from measurement.plugins.download_speed.results import (
 
 from measurement.units import NetworkUnit, StorageUnit
 
+# NOTE: To match what subprocess calls output, wget output strings
+#       should end with "\n\n" and latency output strings should end with "\n"
+
 
 def test_wget_output_regex_accepts_anticipated_format():
     anticipated_format = six.ensure_str(
@@ -28,8 +31,6 @@ def test_wget_output_regex_accepts_anticipated_format():
 
 
 class DownloadSpeedMeasurementCreationTestCase(TestCase):
-    def setUp(self) -> None:
-        super().setUp()
 
     def test_invalid_hosts(self, *args):
         self.assertRaises(
