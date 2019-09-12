@@ -179,43 +179,44 @@ class DownloadSpeedMeasurement(BaseMeasurement):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 timeout=download_timeout,
+                universal_newlines=True
             )
         except subprocess.TimeoutExpired:
             return self._get_wget_error("wget-timeout", url, traceback=None)
-
+        # print(wget_out)
         if wget_out.returncode != 0:
+            print(self._get_wget_error("wget-err", url, traceback=wget_out.stderr))
             return self._get_wget_error("wget-err", url, traceback=wget_out.stderr)
         try:
-            wget_data = wget_out.stderr.decode().split("\n")[-3]
+            wget_data = wget_out.stderr.split("\n")[-3]
         except IndexError:
-            return self._get_wget_error("wget-split", url, traceback=wget_out)
+            return self._get_wget_error("wget-split", url, traceback=wget_out.stderr)
         matches = WGET_OUTPUT_REGEX.search(wget_data)
 
         try:
             match_data = matches.groupdict()
         except AttributeError:
-            return self._get_wget_error("wget-regex", url, traceback=wget_out)
+            return self._get_wget_error("wget-regex", url, traceback=wget_out.stderr)
 
         if len(match_data.keys()) != 3:
-            return self._get_wget_error("wget-regex", url, traceback=wget_out)
+            return self._get_wget_error("wget-regex", url, traceback=wget_out.stderr)
 
         try:
             storage_unit = NetworkUnit(
                 match_data.get("download_unit").replace("MB/s", "Mbit/s")
             )
         except ValueError:
-            return self._get_wget_error("wget-storage-unit", url, traceback=wget_out)
+            return self._get_wget_error("wget-storage-unit", url, traceback=wget_out.stderr)
 
         try:
             download_rate = float(match_data.get("download_rate"))
         except (TypeError, ValueError):
-            return self._get_wget_error("wget-download-rate", url, traceback=wget_out)
+            return self._get_wget_error("wget-download-rate", url, traceback=wget_out.stderr)
 
         try:
             download_size = float(match_data.get("download_size"))
         except (TypeError, ValueError):
-            return self._get_wget_error("wget-download-size", url, traceback=wget_out)
-
+            return self._get_wget_error("wget-download-size", url, traceback=wget_out.stderr)
         return DownloadSpeedMeasurementResult(
             id=self.id,
             url=url,

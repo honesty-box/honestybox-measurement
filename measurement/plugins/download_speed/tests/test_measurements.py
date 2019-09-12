@@ -1,15 +1,21 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase, mock
 import six
+import subprocess
 
+from measurement.results import Error
 from measurement.plugins.download_speed.measurements import WGET_OUTPUT_REGEX
 from measurement.plugins.download_speed.measurements import (
     DownloadSpeedMeasurement,
+)
+from measurement.plugins.download_speed.measurements import (
+    WGET_ERRORS, LATENCY_ERRORS
 )
 from measurement.plugins.download_speed.results import (
     DownloadSpeedMeasurementResult,
     LatencyMeasurementResult,
 )
+
 from measurement.units import NetworkUnit, StorageUnit
 
 
@@ -54,6 +60,95 @@ class DownloadSpeedMeasurementCreationTestCase(TestCase):
             ["http://validfakeurl.com"],
             count=-2
         )
+
+
+class DownloadSpeedMeasurementWgetTestCase(TestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.measurement = DownloadSpeedMeasurement("test", ["https://validfakehost.com/test"])
+        self.valid_wget = DownloadSpeedMeasurementResult(
+            id="test",
+            url="http://validfakehost.com/test",
+            download_rate_unit=NetworkUnit("Mbit/s"),
+            download_rate=16.7,
+            download_size=11376,
+            download_size_unit=StorageUnit.megabit,
+            errors=[],
+        )
+        self.invalid_wget = DownloadSpeedMeasurementResult(
+            id="test",
+            url="http://validfakehost.com/test",
+            download_rate_unit=None,
+            download_rate=None,
+            download_size=None,
+            download_size_unit=None,
+            errors=[
+                Error(
+                    key="wget-err",
+                    description=WGET_ERRORS.get("wget-err", ""),
+                    traceback="\n2019-08-07 09:12:08 (16.7 MB/s) - '/dev/null’ saved [11376]\n\n",
+                )
+            ],
+        )
+        self.invalid_regex = DownloadSpeedMeasurementResult(
+            id="test",
+            url="http://validfakehost.com/test",
+            download_rate_unit=None,
+            download_rate=None,
+            download_size=None,
+            download_size_unit=None,
+            errors=[
+                Error(
+                    key="wget-regex",
+                    description=WGET_ERRORS.get("wget-regex", ""),
+                    traceback="\n2019-08-07 09:12:08 [BAD REGEX]\n\n",
+                )
+            ],
+        )
+
+    @mock.patch("subprocess.run")
+    def test_valid_wget(self, mock_run):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout="b''",
+            stderr="\n2019-08-07 09:12:08 (16.7 MB/s) - '/dev/null’ saved [11376]\n\n",
+        )
+        self.assertEqual(
+            self.valid_wget,
+            self.measurement._get_wget_results("http://validfakehost.com/test", self.measurement.download_timeout)
+        )
+
+    @mock.patch("subprocess.run")
+    def test_invalid_wget(self, mock_run):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[],
+            returncode=1,
+            stdout="b''",
+            stderr="\n2019-08-07 09:12:08 (16.7 MB/s) - '/dev/null’ saved [11376]\n\n",
+        )
+        self.assertEqual(
+            self.invalid_wget,
+            self.measurement._get_wget_results("http://validfakehost.com/test", self.measurement.download_timeout)
+        )
+
+    @mock.patch("subprocess.run")
+    def test_wget_invalid_regex(self, mock_run):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout="b''",
+            stderr="\n2019-08-07 09:12:08 [BAD REGEX]\n\n",
+        )
+        self.assertEqual(
+            self.invalid_regex,
+            self.measurement._get_wget_results("http://validfakehost.com/test", self.measurement.download_timeout)
+        )
+
+
+class DownloadSpeedMeasurementLatencyTestCase(TestCase):
+    def setUp(self) -> None:
+        super().setUp()
 
 
 class DownloadSpeedMeasurementClosestServerTestCase(TestCase):
