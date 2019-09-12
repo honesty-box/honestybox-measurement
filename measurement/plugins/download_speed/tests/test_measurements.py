@@ -149,6 +149,86 @@ class DownloadSpeedMeasurementWgetTestCase(TestCase):
 class DownloadSpeedMeasurementLatencyTestCase(TestCase):
     def setUp(self) -> None:
         super().setUp()
+        self.measurement = DownloadSpeedMeasurement("test", ["https://validfakehost.com/test"])
+        self.valid_latency = LatencyMeasurementResult(
+            id="test",
+            host="validfakehost.com",
+            minimum_latency=5.484,
+            average_latency=6.133,
+            maximum_latency=7.133,
+            median_deviation=0.611,
+            errors=[]
+        )
+        self.invalid_latency = LatencyMeasurementResult(
+            id="test",
+            host="validfakehost.com",
+            minimum_latency=None,
+            average_latency=None,
+            maximum_latency=None,
+            median_deviation=None,
+            errors=[
+                Error(
+                    key="ping-err",
+                    description=LATENCY_ERRORS.get("ping-err", ""),
+                    traceback="the ping messed up!",
+                )
+            ]
+        )
+        self.invalid_regex = LatencyMeasurementResult(
+            id="test",
+            host="validfakehost.com",
+            minimum_latency=None,
+            average_latency=None,
+            maximum_latency=None,
+            median_deviation=None,
+            errors=[
+                Error(
+                    key="ping-regex",
+                    description=LATENCY_ERRORS.get("ping-regex", ""),
+                    traceback="\nrtt min/avg/max/mdev = [BAD REGEX] ms\n",
+                )
+            ]
+        )
+
+    @mock.patch("subprocess.run")
+    def test_valid_latency(self, mock_run):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout="\nrtt min/avg/max/mdev = 5.484/6.133/7.133/0.611 ms\n",
+            stderr="",
+        )
+        self.assertEqual(
+            self.valid_latency,
+            self.measurement._get_latency_results("validfakehost.com")
+        )
+
+    @mock.patch("subprocess.run")
+    def test_invalid_latency(self, mock_run):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[],
+            returncode=1,
+            stdout="\nrtt min/avg/max/mdev = 5.484/6.133/7.133/0.611 ms\n",
+            stderr="the ping messed up!",
+        )
+        self.assertEqual(
+            self.invalid_latency,
+            self.measurement._get_latency_results("validfakehost.com")
+        )
+
+    @mock.patch("subprocess.run")
+    def test_latency_invalid_regex(self, mock_run):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout="\nrtt min/avg/max/mdev = [BAD REGEX] ms\n",
+            stderr="",
+        )
+        self.assertEqual(
+            self.invalid_regex,
+            self.measurement._get_latency_results("validfakehost.com")
+        )
+
 
 
 class DownloadSpeedMeasurementClosestServerTestCase(TestCase):

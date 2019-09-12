@@ -105,7 +105,7 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             initial_latency_results.append((url, (self._get_latency_results(host, 2))))
         return sorted(initial_latency_results, key=lambda x: (x[1].average_latency is None, x[1].average_latency))
 
-    def _get_latency_results(self, host, count):
+    def _get_latency_results(self, host, count=4):
         """Perform the latency measurement."""
         if host is None:
             return self._get_latency_error("ping-no-server", host, traceback=None)
@@ -113,47 +113,57 @@ class DownloadSpeedMeasurement(BaseMeasurement):
         latency_out = six.moves.getoutput(
             "ping -c {count} {host}".format(count=count, host=host)
         )
+        latency_out = subprocess.run(
+            ["ping", "-c", "{c}".format(c=count), "{h}".format(h=host)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True
+        )
+        # Note: only this error cares about stderr, other issues will be evident in stdout
+        if latency_out.returncode != 0:
+            return self._get_latency_error("ping-err", host, traceback=latency_out.stderr)
+
         try:
-            latency_data = latency_out.split("\n")[-1]
+            latency_data = latency_out.stdout.split("\n")[-2]
         except IndexError:
-            return self._get_latency_error("ping-split", host, traceback=latency_out)
+            return self._get_latency_error("ping-split", host, traceback=latency_out.stdout)
 
         matches = LATENCY_OUTPUT_REGEX.search(latency_data)
         try:
             match_data = matches.groupdict()
         except AttributeError:
-            return self._get_latency_error("ping-regex", host, traceback=latency_out)
+            return self._get_latency_error("ping-regex", host, traceback=latency_out.stdout)
 
         if len(match_data.keys()) != 4:
-            return self._get_latency_error("ping-regex", host, traceback=latency_out)
+            return self._get_latency_error("ping-regex", host, traceback=latency_out.stdout)
         match_data = matches.groupdict()
 
         try:
             maximum_latency = float(match_data.get("maximum_latency"))
         except (TypeError, ValueError):
             return self._get_latency_error(
-                "ping-maximum-latency", host, traceback=latency_out
+                "ping-maximum-latency", host, traceback=latency_out.stdout
             )
 
         try:
             minimum_latency = float(match_data.get("minimum_latency"))
         except (TypeError, ValueError):
             return self._get_latency_error(
-                "ping-minimum-latency", host, traceback=latency_out
+                "ping-minimum-latency", host, traceback=latency_out.stdout
             )
 
         try:
             average_latency = float(match_data.get("average_latency"))
         except (TypeError, ValueError):
             return self._get_latency_error(
-                "ping-average-latency", host, traceback=latency_out
+                "ping-average-latency", host, traceback=latency_out.stdout
             )
 
         try:
             median_deviation = float(match_data.get("median_deviation"))
         except (TypeError, ValueError):
             return self._get_latency_error(
-                "ping-median_deviation", host, traceback=latency_out
+                "ping-median_deviation", host, traceback=latency_out.stdout
             )
 
         return LatencyMeasurementResult(
@@ -183,9 +193,8 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             )
         except subprocess.TimeoutExpired:
             return self._get_wget_error("wget-timeout", url, traceback=None)
-        # print(wget_out)
+
         if wget_out.returncode != 0:
-            print(self._get_wget_error("wget-err", url, traceback=wget_out.stderr))
             return self._get_wget_error("wget-err", url, traceback=wget_out.stderr)
         try:
             wget_data = wget_out.stderr.split("\n")[-3]
