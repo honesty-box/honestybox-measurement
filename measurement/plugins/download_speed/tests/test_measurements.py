@@ -65,8 +65,8 @@ class DownloadSpeedMeasurementWgetTestCase(TestCase):
         self.valid_wget = DownloadSpeedMeasurementResult(
             id="test",
             url="http://validfakehost.com/test",
-            download_rate_unit=NetworkUnit("Mbit/s"),
-            download_rate=16.7,
+            download_rate_unit=NetworkUnit("Mibit/s"),
+            download_rate=133.6,
             download_size=11376,
             download_size_unit=StorageUnit.megabit,
             errors=[],

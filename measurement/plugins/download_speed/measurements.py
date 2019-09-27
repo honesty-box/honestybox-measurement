@@ -25,7 +25,7 @@ WGET_ERRORS = {
     "wget-err": "wget had an unknown error.",
     "wget-split": "wget attempted to split the result but it was in an unanticipated format.",
     "wget-regex": "wget attempted get the known regex format and failed.",
-    "wget-storage-unit": "wget could not process the storage unit.",
+    "wget-download-unit": "wget could not process the download unit.",
     "wget-download-rate": "wget could not process the download rate.",
     "wget-download-size": "wget could not process the download size.",
     "wget-no-server": "No closest server could be resolved.",
@@ -219,8 +219,8 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             return self._get_wget_error("wget-regex", url, traceback=wget_out.stderr)
 
         try:
-            storage_unit = NetworkUnit(
-                match_data.get("download_unit").replace("MB/s", "Mbit/s")
+            download_rate_unit = NetworkUnit(
+                match_data.get("download_unit").replace("MB/s", "Mibit/s")
             )
         except ValueError:
             return self._get_wget_error(
@@ -228,7 +228,8 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             )
 
         try:
-            download_rate = float(match_data.get("download_rate"))
+            # NOTE: wget returns download rate in MiB/s. Convert to Mibit/s.
+            download_rate = float(match_data.get("download_rate")) * 8
         except (TypeError, ValueError):
             return self._get_wget_error(
                 "wget-download-rate", url, traceback=wget_out.stderr
@@ -243,7 +244,7 @@ class DownloadSpeedMeasurement(BaseMeasurement):
         return DownloadSpeedMeasurementResult(
             id=self.id,
             url=url,
-            download_rate_unit=storage_unit,
+            download_rate_unit=download_rate_unit,
             download_rate=download_rate,
             download_size=download_size,
             download_size_unit=StorageUnit.megabit,
