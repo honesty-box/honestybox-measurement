@@ -43,6 +43,10 @@ LATENCY_ERRORS = {
     "ping-timeout": "Measurement request timed out.",
 }
 
+WGET_DOWNLOAD_RATE_UNIT_MAP = {
+    "KB/s": NetworkUnit("Kibit/s"),
+    "MB/s": NetworkUnit("Mibit/s"),
+}
 
 class DownloadSpeedMeasurement(BaseMeasurement):
     """A measurement designed to test download speed."""
@@ -219,16 +223,14 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             return self._get_wget_error("wget-regex", url, traceback=wget_out.stderr)
 
         try:
-            download_rate_unit = NetworkUnit(
-                match_data.get("download_unit").replace("MB/s", "Mibit/s")
-            )
-        except ValueError:
+            download_rate_unit = WGET_DOWNLOAD_RATE_UNIT_MAP[match_data.get("download_unit")]
+        except KeyError:
             return self._get_wget_error(
                 "wget-download-unit", url, traceback=wget_out.stderr
             )
 
         try:
-            # NOTE: wget returns download rate in MiB/s. Convert to Mibit/s.
+            # NOTE: wget returns download rate in [K|M]B/s. Convert to [K|M]ibit/s.
             download_rate = float(match_data.get("download_rate")) * 8
         except (TypeError, ValueError):
             return self._get_wget_error(

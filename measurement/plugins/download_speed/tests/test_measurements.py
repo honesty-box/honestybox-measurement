@@ -62,7 +62,16 @@ class DownloadSpeedMeasurementWgetTestCase(TestCase):
         self.measurement = DownloadSpeedMeasurement(
             "test", ["https://validfakehost.com/test"]
         )
-        self.valid_wget = DownloadSpeedMeasurementResult(
+        self.valid_wget_kibit_sec = DownloadSpeedMeasurementResult(
+            id="test",
+            url="http://validfakehost.com/test",
+            download_rate_unit=NetworkUnit("Kibit/s"),
+            download_rate=133.6,
+            download_size=11376,
+            download_size_unit=StorageUnit.bit,
+            errors=[],
+        )
+        self.valid_wget_mibit_sec = DownloadSpeedMeasurementResult(
             id="test",
             url="http://validfakehost.com/test",
             download_rate_unit=NetworkUnit("Mibit/s"),
@@ -71,7 +80,7 @@ class DownloadSpeedMeasurementWgetTestCase(TestCase):
             download_size_unit=StorageUnit.bit,
             errors=[],
         )
-        self.invalid_wget = DownloadSpeedMeasurementResult(
+        self.invalid_wget_mibit_sec = DownloadSpeedMeasurementResult(
             id="test",
             url="http://validfakehost.com/test",
             download_rate_unit=None,
@@ -83,6 +92,21 @@ class DownloadSpeedMeasurementWgetTestCase(TestCase):
                     key="wget-err",
                     description=WGET_ERRORS.get("wget-err", ""),
                     traceback="\n2019-08-07 09:12:08 (16.7 MB/s) - '/dev/null’ saved [11376]\n\n",
+                )
+            ],
+        )
+        self.invalid_wget_download_unit = DownloadSpeedMeasurementResult(
+            id="test",
+            url="http://validfakehost.com/test",
+            download_rate_unit=None,
+            download_rate=None,
+            download_size=None,
+            download_size_unit=None,
+            errors=[
+                Error(
+                    key="wget-download-unit",
+                    description=WGET_ERRORS.get("wget-download-unit", ""),
+                    traceback="\n2019-08-07 09:12:08 (16.7 TB/s) - '/dev/null’ saved [11376]\n\n",
                 )
             ],
         )
@@ -103,7 +127,22 @@ class DownloadSpeedMeasurementWgetTestCase(TestCase):
         )
 
     @mock.patch("subprocess.run")
-    def test_valid_wget(self, mock_run):
+    def test_valid_wget_kibit_sec(self, mock_run):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout="b''",
+            stderr="\n2019-08-07 09:12:08 (16.7 KB/s) - '/dev/null’ saved [11376]\n\n",
+        )
+        self.assertEqual(
+            self.valid_wget_kibit_sec,
+            self.measurement._get_wget_results(
+                "http://validfakehost.com/test", self.measurement.download_timeout
+            ),
+        )
+
+    @mock.patch("subprocess.run")
+    def test_valid_wget_mibit_sec(self, mock_run):
         mock_run.return_value = subprocess.CompletedProcess(
             args=[],
             returncode=0,
@@ -111,7 +150,7 @@ class DownloadSpeedMeasurementWgetTestCase(TestCase):
             stderr="\n2019-08-07 09:12:08 (16.7 MB/s) - '/dev/null’ saved [11376]\n\n",
         )
         self.assertEqual(
-            self.valid_wget,
+            self.valid_wget_mibit_sec,
             self.measurement._get_wget_results(
                 "http://validfakehost.com/test", self.measurement.download_timeout
             ),
@@ -126,7 +165,22 @@ class DownloadSpeedMeasurementWgetTestCase(TestCase):
             stderr="\n2019-08-07 09:12:08 (16.7 MB/s) - '/dev/null’ saved [11376]\n\n",
         )
         self.assertEqual(
-            self.invalid_wget,
+            self.invalid_wget_mibit_sec,
+            self.measurement._get_wget_results(
+                "http://validfakehost.com/test", self.measurement.download_timeout
+            ),
+        )
+
+    @mock.patch("subprocess.run")
+    def test_invalid_wget_download_unit(self, mock_run):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout="b''",
+            stderr="\n2019-08-07 09:12:08 (16.7 TB/s) - '/dev/null’ saved [11376]\n\n",
+        )
+        self.assertEqual(
+            self.invalid_wget_download_unit,
             self.measurement._get_wget_results(
                 "http://validfakehost.com/test", self.measurement.download_timeout
             ),
