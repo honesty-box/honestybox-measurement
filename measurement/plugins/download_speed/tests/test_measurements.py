@@ -68,7 +68,7 @@ class DownloadSpeedMeasurementWgetTestCase(TestCase):
             download_rate_unit=NetworkUnit("Mibit/s"),
             download_rate=133.6,
             download_size=11376,
-            download_size_unit=StorageUnit.megabit,
+            download_size_unit=StorageUnit.bit,
             errors=[],
         )
         self.invalid_wget = DownloadSpeedMeasurementResult(

@@ -224,7 +224,7 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             )
         except ValueError:
             return self._get_wget_error(
-                "wget-storage-unit", url, traceback=wget_out.stderr
+                "wget-download-unit", url, traceback=wget_out.stderr
             )
 
         try:
@@ -247,7 +247,7 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             download_rate_unit=download_rate_unit,
             download_rate=download_rate,
             download_size=download_size,
-            download_size_unit=StorageUnit.megabit,
+            download_size_unit=StorageUnit.bit,
             errors=[],
         )
 
