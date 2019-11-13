@@ -1,11 +1,17 @@
 [tool.poetry]
 name = "honestybox-measurement"
 version = "1.0.0"
-description = ""
-authors = ["Stuart Dines <me@stuartdines.com>"]
+description = "A framework for measuring things and producing structured results."
+authors = [
+    "Honesty Box <engineering@honestybox.com.au>",
+    "James Stewart <james@amorphitec.io>",
+    "Stuart Dines <me@stuartdines.com>"
+]
 packages = [
     { include = "measurement" },
 ]
+repository = "https://github.com/honesty-box/honestybox-measurement/"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.5"
