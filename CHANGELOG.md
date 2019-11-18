@@ -1,4 +1,6 @@
 ## Unreleased
+### Added
+* Added detailed ping test
 
 ## [1.0.1] (2019-11-13)
 ### Added
