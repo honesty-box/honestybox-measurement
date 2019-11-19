@@ -26,26 +26,3 @@ class DownloadSpeedMeasurementResult(MeasurementResult):
     download_size_unit: typing.Optional[StorageUnit]
     download_rate: typing.Optional[float]
     download_rate_unit: typing.Optional[NetworkUnit]
-
-
-@dataclass(frozen=True)
-class LatencyMeasurementResult(MeasurementResult):
-    """Encapsulates the results from a latency measurement.
-
-    :param host: The host that was used to perform the latency
-    measurement.
-    :param minimum_latency: The minimum amount of latency witnessed
-    while performing the measurement.
-    :param average_latency: The average amount of latency witnessed
-    while performing the measurement.
-    :param maximum_latency: The maximum amount of latency witnessed
-    while performing the measurement.
-    :param median_deviation: The median deviation witnessed across
-    the measurement.
-    """
-
-    host: str
-    minimum_latency: typing.Optional[float]
-    average_latency: typing.Optional[float]
-    maximum_latency: typing.Optional[float]
-    median_deviation: typing.Optional[float]

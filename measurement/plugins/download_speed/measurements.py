@@ -1,24 +1,18 @@
 import re
 
-import six
 import validators
 import subprocess
 from six.moves.urllib.parse import urlparse
 from validators import ValidationFailure
 
 from measurement.measurements import BaseMeasurement
-from measurement.plugins.download_speed.results import (
-    DownloadSpeedMeasurementResult,
-    LatencyMeasurementResult,
-)
+from measurement.plugins.download_speed.results import DownloadSpeedMeasurementResult
+from measurement.plugins.latency.measurements import LatencyMeasurement
 from measurement.results import Error
 from measurement.units import NetworkUnit, StorageUnit
 
 WGET_OUTPUT_REGEX = re.compile(
     r"\((?P<download_rate>[\d.]*)\s(?P<download_unit>.*)\).*\[(?P<download_size>\d*)[\]/]"
-)
-LATENCY_OUTPUT_REGEX = re.compile(
-    r"= (?P<minimum_latency>[\d.].*)/(?P<average_latency>[\d.].*)/(?P<maximum_latency>[\d.].*)/(?P<median_deviation>[\d.].*) "
 )
 
 WGET_ERRORS = {
@@ -31,22 +25,12 @@ WGET_ERRORS = {
     "wget-no-server": "No closest server could be resolved.",
     "wget-timeout": "Measurement request timed out.",
 }
-LATENCY_ERRORS = {
-    "ping-err": "ping had an unknown error",
-    "ping-split": "ping attempted to split the result but it was in an unanticipated format",
-    "ping-regex": "ping attempted get the known regex format and failed.",
-    "ping-minimum-latency": "ping could not process the minimum latency.",
-    "ping-maximum-latency": "ping could not process the maximum latency.",
-    "ping-average-latency": "ping could not process the average latency.",
-    "ping-median-deviation": "ping could not process the median deviation.",
-    "ping-no-server": "No closest server could be resolved.",
-    "ping-timeout": "Measurement request timed out.",
-}
 
 WGET_DOWNLOAD_RATE_UNIT_MAP = {
     "KB/s": NetworkUnit("Kibit/s"),
     "MB/s": NetworkUnit("Mibit/s"),
 }
+
 
 class DownloadSpeedMeasurement(BaseMeasurement):
     """A measurement designed to test download speed."""
@@ -93,7 +77,8 @@ class DownloadSpeedMeasurement(BaseMeasurement):
         results = [self._get_wget_results(least_latent_url, self.download_timeout)]
         if self.count > 0:
             host = urlparse(least_latent_url).netloc
-            results.append(self._get_latency_results(host, self.count))
+            latency_measurement = LatencyMeasurement(self.id, host, count=self.count)
+            results.append(latency_measurement.measure()[0])
 
         results.extend([res for _, res in initial_latency_results])
         return results
@@ -106,86 +91,11 @@ class DownloadSpeedMeasurement(BaseMeasurement):
         initial_latency_results = []
         for url in urls:
             host = urlparse(url).netloc
-            initial_latency_results.append((url, (self._get_latency_results(host, 2))))
+            latency_measurement = LatencyMeasurement(self.id, host, count=2)
+            initial_latency_results.append((url, latency_measurement.measure()[0]))
         return sorted(
             initial_latency_results,
             key=lambda x: (x[1].average_latency is None, x[1].average_latency),
-        )
-
-    def _get_latency_results(self, host, count=4):
-        """Perform the latency measurement."""
-        if host is None:
-            return self._get_latency_error("ping-no-server", host, traceback=None)
-
-        latency_out = subprocess.run(
-            ["ping", "-c", "{c}".format(c=count), "{h}".format(h=host)],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-        )
-        # Note: only this error cares about stderr, other issues will be evident in stdout
-        if latency_out.returncode != 0:
-            return self._get_latency_error(
-                "ping-err", host, traceback=latency_out.stderr
-            )
-
-        try:
-            latency_data = latency_out.stdout.split("\n")[-2]
-        except IndexError:
-            return self._get_latency_error(
-                "ping-split", host, traceback=latency_out.stdout
-            )
-
-        matches = LATENCY_OUTPUT_REGEX.search(latency_data)
-        try:
-            match_data = matches.groupdict()
-        except AttributeError:
-            return self._get_latency_error(
-                "ping-regex", host, traceback=latency_out.stdout
-            )
-
-        if len(match_data.keys()) != 4:
-            return self._get_latency_error(
-                "ping-regex", host, traceback=latency_out.stdout
-            )
-        match_data = matches.groupdict()
-
-        try:
-            maximum_latency = float(match_data.get("maximum_latency"))
-        except (TypeError, ValueError):
-            return self._get_latency_error(
-                "ping-maximum-latency", host, traceback=latency_out.stdout
-            )
-
-        try:
-            minimum_latency = float(match_data.get("minimum_latency"))
-        except (TypeError, ValueError):
-            return self._get_latency_error(
-                "ping-minimum-latency", host, traceback=latency_out.stdout
-            )
-
-        try:
-            average_latency = float(match_data.get("average_latency"))
-        except (TypeError, ValueError):
-            return self._get_latency_error(
-                "ping-average-latency", host, traceback=latency_out.stdout
-            )
-
-        try:
-            median_deviation = float(match_data.get("median_deviation"))
-        except (TypeError, ValueError):
-            return self._get_latency_error(
-                "ping-median_deviation", host, traceback=latency_out.stdout
-            )
-
-        return LatencyMeasurementResult(
-            id=self.id,
-            host=host,
-            minimum_latency=minimum_latency,
-            average_latency=average_latency,
-            maximum_latency=maximum_latency,
-            median_deviation=median_deviation,
-            errors=[],
         )
 
     def _get_wget_results(self, url, download_timeout):
@@ -223,7 +133,9 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             return self._get_wget_error("wget-regex", url, traceback=wget_out.stderr)
 
         try:
-            download_rate_unit = WGET_DOWNLOAD_RATE_UNIT_MAP[match_data.get("download_unit")]
+            download_rate_unit = WGET_DOWNLOAD_RATE_UNIT_MAP[
+                match_data.get("download_unit")
+            ]
         except KeyError:
             return self._get_wget_error(
                 "wget-download-unit", url, traceback=wget_out.stderr
@@ -264,23 +176,6 @@ class DownloadSpeedMeasurement(BaseMeasurement):
             errors=[
                 Error(
                     key=key, description=WGET_ERRORS.get(key, ""), traceback=traceback
-                )
-            ],
-        )
-
-    def _get_latency_error(self, key, host, traceback):
-        return LatencyMeasurementResult(
-            id=self.id,
-            host=host,
-            minimum_latency=None,
-            average_latency=None,
-            maximum_latency=None,
-            median_deviation=None,
-            errors=[
-                Error(
-                    key=key,
-                    description=LATENCY_ERRORS.get(key, ""),
-                    traceback=traceback,
                 )
             ],
         )

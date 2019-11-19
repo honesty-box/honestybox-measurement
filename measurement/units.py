@@ -13,7 +13,8 @@ class NetworkUnit(Enum):
 class StorageUnit(Enum):
     """Anticipated units for a storage style of measurement."""
 
-    bit     = "bit"
+    bit = "bit"
+    bytes = "B"
     kilobit = "kbit"
     megabit = "Mbit"
     kibibit = "Kibit"
@@ -22,3 +23,15 @@ class StorageUnit(Enum):
     megabyte = "MB"
     kibibyte = "KiB"
     mebibyte = "MiB"
+
+
+class TimeUnit(Enum):
+    millisecond = "ms"
+    second = "s"
+    minute = "m"
+    hour = "h"
+    day = "d"
+
+
+class RatioUnit(Enum):
+    percentage = "%"
