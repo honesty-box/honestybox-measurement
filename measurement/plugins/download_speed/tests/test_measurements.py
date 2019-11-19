@@ -3,6 +3,7 @@ from unittest import TestCase, mock
 import six
 import subprocess
 
+from measurement.plugins.latency.measurements import LatencyMeasurement
 from measurement.results import Error
 from measurement.plugins.download_speed.measurements import WGET_OUTPUT_REGEX
 from measurement.plugins.download_speed.measurements import DownloadSpeedMeasurement
@@ -210,86 +211,94 @@ class DownloadSpeedMeasurementClosestServerTestCase(TestCase):
         self.measurement = DownloadSpeedMeasurement("test", self.example_urls)
         print("asdf")
 
-    @mock.patch.object(DownloadSpeedMeasurement, "_get_latency_results")
+    @mock.patch.object(LatencyMeasurement, "measure")
     def test_sort_least_latent_url(self, mock_latency_results):
         results = [
-            LatencyMeasurementResult(
-                id="test",
-                host="n1-validfakehost.com",
-                minimum_latency=None,
-                average_latency=None,
-                maximum_latency=None,
-                median_deviation=None,
-                errors=[],
-                packets_transmitted=None,
-                packets_received=None,
-                packets_lost=None,
-                packets_lost_unit=None,
-                time=None,
-                time_unit=None,
+            (
+                LatencyMeasurementResult(
+                    id="test",
+                    host="n1-validfakehost.com",
+                    minimum_latency=None,
+                    average_latency=None,
+                    maximum_latency=None,
+                    median_deviation=None,
+                    errors=[],
+                    packets_transmitted=None,
+                    packets_received=None,
+                    packets_lost=None,
+                    packets_lost_unit=None,
+                    time=None,
+                    time_unit=None,
+                ),
             ),
-            LatencyMeasurementResult(
-                id="test",
-                host="n2-validfakehost.com",
-                minimum_latency=None,
-                average_latency=25.0,
-                maximum_latency=None,
-                median_deviation=None,
-                errors=[],
-                packets_transmitted=None,
-                packets_received=None,
-                packets_lost=None,
-                packets_lost_unit=None,
-                time=None,
-                time_unit=None,
+            (
+                LatencyMeasurementResult(
+                    id="test",
+                    host="n2-validfakehost.com",
+                    minimum_latency=None,
+                    average_latency=25.0,
+                    maximum_latency=None,
+                    median_deviation=None,
+                    errors=[],
+                    packets_transmitted=None,
+                    packets_received=None,
+                    packets_lost=None,
+                    packets_lost_unit=None,
+                    time=None,
+                    time_unit=None,
+                ),
             ),
-            LatencyMeasurementResult(
-                id="test",
-                host="n3-validfakehost.com",
-                minimum_latency=None,
-                average_latency=999.0,
-                maximum_latency=None,
-                median_deviation=None,
-                errors=[],
-                packets_transmitted=None,
-                packets_received=None,
-                packets_lost=None,
-                packets_lost_unit=None,
-                time=None,
-                time_unit=None,
+            (
+                LatencyMeasurementResult(
+                    id="test",
+                    host="n3-validfakehost.com",
+                    minimum_latency=None,
+                    average_latency=999.0,
+                    maximum_latency=None,
+                    median_deviation=None,
+                    errors=[],
+                    packets_transmitted=None,
+                    packets_received=None,
+                    packets_lost=None,
+                    packets_lost_unit=None,
+                    time=None,
+                    time_unit=None,
+                ),
             ),
         ]
         mock_latency_results.side_effect = results
         self.assertEqual(
             self.measurement._find_least_latent_url(self.example_urls),
             [
-                (self.example_urls[1], results[1]),
-                (self.example_urls[2], results[2]),
-                (self.example_urls[0], results[0]),
+                (self.example_urls[1], results[1][0]),
+                (self.example_urls[2], results[2][0]),
+                (self.example_urls[0], results[0][0]),
             ],
         )
 
-    @mock.patch.object(DownloadSpeedMeasurement, "_get_latency_results")
+    @mock.patch.object(LatencyMeasurement, "measure")
     def test_sort_one_url(self, mock_latency_results):
         results = [
-            LatencyMeasurementResult(
-                id="test",
-                host="n2-validfakehost.com",
-                minimum_latency=None,
-                average_latency=25.0,
-                maximum_latency=None,
-                median_deviation=None,
-                errors=[],
-                packets_transmitted=None,
-                packets_received=None,
-                packets_lost=None,
-                packets_lost_unit=None,
-                time=None,
-                time_unit=None,
+            (
+                LatencyMeasurementResult(
+                    id="test",
+                    host="n2-validfakehost.com",
+                    minimum_latency=None,
+                    average_latency=25.0,
+                    maximum_latency=None,
+                    median_deviation=None,
+                    errors=[],
+                    packets_transmitted=None,
+                    packets_received=None,
+                    packets_lost=None,
+                    packets_lost_unit=None,
+                    time=None,
+                    time_unit=None,
+                ),
             )
         ]
         mock_latency_results.side_effect = results
         self.assertEqual(
             self.measurement._find_least_latent_url([self.example_urls[1]]),
-            [(self.example_urls[1], results[0])],
+            [(self.example_urls[1], results[0][0])],
         )
