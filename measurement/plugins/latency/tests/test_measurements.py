@@ -154,7 +154,7 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
                     time_unit=TimeUnit.millisecond,
                 ),
             ],
-            measurement._get_latency_results("validfakehost.com"),
+            measurement._get_latency_results("validfakehost.com", include_individual_results=True),
         )
 
     @mock.patch("subprocess.run")

@@ -196,7 +196,7 @@ class LatencyMeasurement(BaseMeasurement):
             )
         ]
 
-        if self.include_individual_results:
+        if include_individual_results:
             matches = LATENCY_INDIVIDUAL_PING_REGEX.findall(latency_out.stdout)
             for match in matches:
                 results.append(
