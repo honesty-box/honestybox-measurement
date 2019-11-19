@@ -26,9 +26,9 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
             errors=[],
             packets_transmitted=4,
             packets_received=4,
-            packets_lost=0,
+            packets_lost=0.0,
             packets_lost_unit=RatioUnit.percentage,
-            time=7,
+            time=7.0,
             time_unit=TimeUnit.millisecond,
         )
         self.invalid_latency = LatencyMeasurementResult(
