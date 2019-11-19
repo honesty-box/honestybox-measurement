@@ -5,6 +5,7 @@ import subprocess
 from six.moves.urllib.parse import urlparse
 from validators import ValidationFailure
 
+from measurement.measurements import BaseMeasurement
 from measurement.plugins.download_speed.results import DownloadSpeedMeasurementResult
 from measurement.plugins.latency.measurements import LatencyMeasurement
 from measurement.results import Error
@@ -31,7 +32,7 @@ WGET_DOWNLOAD_RATE_UNIT_MAP = {
 }
 
 
-class DownloadSpeedMeasurement(LatencyMeasurement):
+class DownloadSpeedMeasurement(BaseMeasurement):
     """A measurement designed to test download speed."""
 
     def __init__(self, id, urls, count=4, download_timeout=180):
@@ -45,7 +46,7 @@ class DownloadSpeedMeasurement(LatencyMeasurement):
         :param download_timeout: An integer describing the number of
         seconds for the test to last. 0 means no timeout.
         """
-        super(LatencyMeasurement, self).__init__(id=id)
+        super(DownloadSpeedMeasurement, self).__init__(id=id)
         if len(urls) < 1:
             raise ValueError("At least one url must be provided.")
         for url in urls:
@@ -76,7 +77,8 @@ class DownloadSpeedMeasurement(LatencyMeasurement):
         results = [self._get_wget_results(least_latent_url, self.download_timeout)]
         if self.count > 0:
             host = urlparse(least_latent_url).netloc
-            results.append(self._get_latency_results(host, self.count)[0])
+            latency_measurement = LatencyMeasurement(self.id, host, count=self.count)
+            results.append(latency_measurement.measure()[0])
 
         results.extend([res for _, res in initial_latency_results])
         return results
@@ -89,7 +91,8 @@ class DownloadSpeedMeasurement(LatencyMeasurement):
         initial_latency_results = []
         for url in urls:
             host = urlparse(url).netloc
-            initial_latency_results.append((url, self._get_latency_results(host, 2)))
+            latency_measurement = LatencyMeasurement(self.id, host, count=2)
+            initial_latency_results.append((url, latency_measurement.measure()[0]))
         return sorted(
             initial_latency_results,
             key=lambda x: (x[1].average_latency is None, x[1].average_latency),
