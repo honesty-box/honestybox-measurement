@@ -64,7 +64,16 @@ class LatencyMeasurement(BaseMeasurement):
         )
 
     def _get_latency_results(self, host, count=4, include_individual_results=False):
-        """Perform the latency measurement."""
+        """Perform the latency measurement.
+
+        :param host: The host name to perform the test against.
+        :param count: The number of pings to determine latency with.
+        :param include_individual_results: Should each of the
+        individualised ping iterations be included in the results?
+        :return: A list of `LatencyMeasurementResult` and
+        `LatencyIndividualMeasurementResult` if individual results are
+        enabled.
+        """
         if host is None:
             return [self._get_latency_error("ping-no-server", host, traceback=None)]
 
