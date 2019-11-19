@@ -1,6 +1,5 @@
 import re
 
-import six
 import validators
 import subprocess
 from six.moves.urllib.parse import urlparse
@@ -8,7 +7,6 @@ from validators import ValidationFailure
 
 from measurement.plugins.download_speed.results import DownloadSpeedMeasurementResult
 from measurement.plugins.latency.measurements import LatencyMeasurement
-from measurement.plugins.latency.results import LatencyMeasurementResult
 from measurement.results import Error
 from measurement.units import NetworkUnit, StorageUnit
 
