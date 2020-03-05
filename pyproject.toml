@@ -16,7 +16,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.5"
 validators = "^0.13.0"
-dataclasses = {version = "^0.6.0", python = "3.6"}
+dataclasses = {version = "^0.6.0", python = "^3.6.0"}
 six = "^1.12"
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
