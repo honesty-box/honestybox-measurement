@@ -23,7 +23,7 @@ class SpeedtestdotnetTestCase(TestCase):
             'upload': 19256654.06593738,
             'ping': 17.054,
             'server': {
-                'url': 'http://speedtest.syd.honestybox.com.au:8080/speedtest/upload.php',
+                'url': 'http://fake.site:8080/speedtest/upload.php',
                 'lat': '-33.8600',
                 'lon': '151.2111',
                 'name': 'HonestyVille',
@@ -31,15 +31,15 @@ class SpeedtestdotnetTestCase(TestCase):
                 'cc': 'AU',
                 'sponsor': "'Yes' HonestyBox",
                 'id': '1267',
-                'url2': 'http://s1.speedtest.syd.honestybox.com.au/speedtest/upload.php',
-                'host': 'speedtest.syd.honestybox.com.au:8080',
+                'url2': 'http://s1.fake.site:8080/speedtest/upload.php',
+                'host': 'fake.site:8080',
                 'd': 53.70823411720704,
                 'latency': 17.054
             },
             'timestamp': '2020-03-11T07:09:52.890803Z',
             'bytes_sent': 25591808,
             'bytes_received': 116746522,
-            'share': 'http://www.speedtest.net/result/9117363621.png',
+            'share': 'http://www.faketest.net/result/9117363621.png',
             'client': {
                 'ip': '101.166.54.134',
                 'lat': '-33.4102',
@@ -63,7 +63,7 @@ class SpeedtestdotnetTestCase(TestCase):
             server_name="HonestyVille",
             server_id="1267",
             server_sponsor="'Yes' HonestyBox",
-            server_host="speedtest.syd.honestybox.com.au:8080",
+            server_host="fake.site:8080",
             errors=[]
         )
         self.sample_result_configretrieval = SpeedtestdotnetMeasurementResult(
@@ -132,11 +132,9 @@ class SpeedtestdotnetTestCase(TestCase):
         results_mock.dict = mock.Mock(return_value=self.sample_results_dict_valid)
         run_mock.results = results_mock
 
-        # results_mock.asdf = mock.MagicMock(return_value="asdf")
         mock_speedtest_constructor.return_value = run_mock
         result = self.stdnm.measure()
         self.assertEqual(result, self.sample_result_valid)
-        # assert False
 
     @mock.patch("speedtest.Speedtest")
     def test_speedtest_config_failure(self, mock_speedtest_constructor):

@@ -16,7 +16,8 @@ SPEEDTEST_ERRORS = {
     "speedtest-err": "wget had an unknown error.",
     "speedtest-config": "speedtest failed to retrieve a config",
     "speedtest-best-server": "speedtest could not find the best server",
-    "speedtest-share": "speedtest could not share results"
+    "speedtest-share": "speedtest could not share results",
+    "speedtest-convert": "could not convert result values"
 }
 
 class SpeedtestdotnetMeasurement(BaseMeasurement):
@@ -31,19 +32,27 @@ class SpeedtestdotnetMeasurement(BaseMeasurement):
         """
         try:
             s = speedtest.Speedtest()
-            # print(s)
-            # print(s.results)
-            # print(s.results.share())
-            s.get_servers(self.servers)
+        except speedtest.ConfigRetrievalError as e:
+            return self._get_speedtest_error("speedtest-config", traceback=str(e))
+
+        s.get_servers(self.servers)
+
+        try:
             s.get_best_server()
-            s.download()
-            s.upload()
-            if share:
+        except speedtest.SpeedtestBestServerFailure as e:
+            return self._get_speedtest_error("speedtest-best-server", traceback=str(e))
+
+        s.download()
+        s.upload()
+
+        if share:
+            try:
                 s.results.share()
-            # print(s.results)
-            results_dict = s.results.dict()
-            import pprint
-            print(pprint.pformat(results_dict))
+            except speedtest.ShareResultsConnectFailure as e:
+                return self._get_speedtest_error("speedtest-share", traceback=str(e))
+
+        results_dict = s.results.dict()
+        try:
             return SpeedtestdotnetMeasurementResult(
                 id=self.id,
                 download_rate=float(results_dict["download"]),
@@ -57,12 +66,8 @@ class SpeedtestdotnetMeasurement(BaseMeasurement):
                 server_host=results_dict["server"]["host"],
                 errors=[]
             )
-        except speedtest.ConfigRetrievalError as e:
-            return self._get_speedtest_error("speedtest-config", traceback=str(e))
-        except speedtest.SpeedtestBestServerFailure as e:
-            return self._get_speedtest_error("speedtest-best-server", traceback=str(e))
-        except speedtest.ShareResultsConnectFailure as e:
-            return self._get_speedtest_error("speedtest-share", traceback=str(e))
+        except ValueError as e:
+            return self._get_speedtest_error("speedtest-convert", traceback=str(e))
 
     def _get_speedtest_error(self, key, traceback):
         return SpeedtestdotnetMeasurementResult(
