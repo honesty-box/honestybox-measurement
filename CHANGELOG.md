@@ -1,4 +1,8 @@
 ## Unreleased
+### Added
+* [412](https://trello.com/c/F7Ep7b0G/412-implement-speedtestdotnet-hb-measurement) HonestyBox speedtestdotnet test
+### Fixed
+* Changed poetry dataclasses version
 
 ## [1.0.2] (2019-11-19)
 ### Added

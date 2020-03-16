@@ -4,6 +4,7 @@ from enum import Enum
 class NetworkUnit(Enum):
     """Anticipated units for a network style of measurement."""
 
+    bit_per_second = "bit/s"
     kilobit_per_second = "kbit/s"
     megabit_per_second = "Mbit/s"
     kibibit_per_second = "Kibit/s"
