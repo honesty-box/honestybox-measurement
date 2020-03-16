@@ -1,4 +1,6 @@
 ## Unreleased
+
+## [1.0.3] (2020-03-16)
 ### Added
 * [412](https://trello.com/c/F7Ep7b0G/412-implement-speedtestdotnet-hb-measurement) HonestyBox speedtestdotnet test
 ### Fixed
