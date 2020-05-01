@@ -66,7 +66,7 @@ To ensure releases are always built on the latest codebase, *changes are only ev
 
 ### Publishing a release
 
-1. Install [poetry](https://poetry.eustace.io) 
+1. Install [poetry](https://poetry.eustace.io)
 
 2. Checkout the release:
 

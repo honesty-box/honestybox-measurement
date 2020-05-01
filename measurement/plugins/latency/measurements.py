@@ -63,7 +63,9 @@ class LatencyMeasurement(BaseMeasurement):
             include_individual_results=self.include_individual_results,
         )
 
-    def _get_latency_results(self, host, count=4, include_individual_results=False):
+    def _get_latency_results(  # noqa: C901
+        self, host, count=4, include_individual_results=False
+    ):
         """Perform the latency measurement.
 
         :param host: The host name to perform the test against.

@@ -1,6 +1,6 @@
 ## Unreleased
 ### Changed
-* Updated dependencies 
+* Updated dependencies
 
 ## [1.0.4] (2020-04-09)
 ### Fixed
