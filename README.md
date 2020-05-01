@@ -6,6 +6,16 @@ A framework for measuring things and producing structured results.
 
 `honestybox-measurement` supports Python 3.5 to Python 3.8 inclusively.
 
+## Development
+
+### Git hooks
+
+[pre-commit](https://pre-commit.com/) hooks are included to ensure code quality
+on `commit` and `push`. Install these hooks like so:
+
+    ```shell script
+    pre-commit install && pre-commit install -t pre-push
+    ```
 
 ## Releases
 
