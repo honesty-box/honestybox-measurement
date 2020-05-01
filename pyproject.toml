@@ -22,10 +22,10 @@ speedtest-cli = "^2.1"
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
 tox = "^3.13"
-black = {version = "^18.3-alpha.0", allows-prereleases = true, python = ">=3.6"}
 flake8 = "^3.7"
 isort = "^4.3"
 pytest-cov = "^2.7"
+black = {version = "^19.10b0", allow-prereleases = true, python = ">=3.6"}
 [tool.tox]
 legacy_tox_ini = """
 [tox]
