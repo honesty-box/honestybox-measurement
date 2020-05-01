@@ -30,6 +30,21 @@ tests = ["coverage", "hypothesis", "pympler", "pytest", "six", "zope.interface"]
 
 [[package]]
 category = "dev"
+description = "Security oriented static analyser for python code."
+name = "bandit"
+optional = false
+python-versions = "*"
+version = "1.6.2"
+
+[package.dependencies]
+GitPython = ">=1.0.1"
+PyYAML = ">=3.13"
+colorama = ">=0.3.9"
+six = ">=1.10.0"
+stevedore = ">=1.20.0"
+
+[[package]]
+category = "dev"
 description = "The uncompromising code formatter."
 marker = "python_version >= \"3.6\""
 name = "black"
@@ -61,7 +76,7 @@ version = "7.1.2"
 [[package]]
 category = "dev"
 description = "Cross-platform colored terminal text."
-marker = "sys_platform == \"win32\""
+marker = "sys_platform == \"win32\" or platform_system == \"Windows\""
 name = "colorama"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
@@ -121,6 +136,28 @@ entrypoints = ">=0.3.0,<0.4.0"
 mccabe = ">=0.6.0,<0.7.0"
 pycodestyle = ">=2.5.0,<2.6.0"
 pyflakes = ">=2.1.0,<2.2.0"
+
+[[package]]
+category = "dev"
+description = "Git Object Database"
+name = "gitdb"
+optional = false
+python-versions = ">=3.4"
+version = "4.0.4"
+
+[package.dependencies]
+smmap = ">=3.0.1,<4"
+
+[[package]]
+category = "dev"
+description = "Python Git Library"
+name = "gitpython"
+optional = false
+python-versions = ">=3.4"
+version = "3.1.1"
+
+[package.dependencies]
+gitdb = ">=4.0.1,<5"
 
 [[package]]
 category = "dev"
@@ -201,6 +238,14 @@ name = "pathspec"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 version = "0.8.0"
+
+[[package]]
+category = "dev"
+description = "Python Build Reasonableness"
+name = "pbr"
+optional = false
+python-versions = "*"
+version = "5.4.5"
 
 [[package]]
 category = "dev"
@@ -289,6 +334,14 @@ testing = ["fields", "hunter", "process-tests (2.0.2)", "six", "virtualenv"]
 
 [[package]]
 category = "dev"
+description = "YAML parser and emitter for Python"
+name = "pyyaml"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+version = "5.3.1"
+
+[[package]]
+category = "dev"
 description = "Alternative regular expression module, to replace re."
 marker = "python_version >= \"3.6\""
 name = "regex"
@@ -305,12 +358,32 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*"
 version = "1.12.0"
 
 [[package]]
+category = "dev"
+description = "A pure Python implementation of a sliding window memory map manager"
+name = "smmap"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+version = "3.0.2"
+
+[[package]]
 category = "main"
 description = "Command line interface for testing internet bandwidth using speedtest.net"
 name = "speedtest-cli"
 optional = false
 python-versions = "*"
 version = "2.1.2"
+
+[[package]]
+category = "dev"
+description = "Manage dynamic plugins for Python applications"
+name = "stevedore"
+optional = false
+python-versions = "*"
+version = "1.32.0"
+
+[package.dependencies]
+pbr = ">=2.0.0,<2.1.0 || >2.1.0"
+six = ">=1.10.0"
 
 [[package]]
 category = "dev"
@@ -398,7 +471,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pathlib2", "contextlib2", "unittest2"]
 
 [metadata]
-content-hash = "9cb8e9f34927d1ed1d2ec2286f06e46bb7cadccd2ad1a48388f250afbc5e8670"
+content-hash = "f150f868bab8015301b1ec0ca985f674813466be673abe3c0f9ca2c7ef1634e6"
 python-versions = ">=3.5"
 
 [metadata.files]
@@ -413,6 +486,10 @@ atomicwrites = [
 attrs = [
     {file = "attrs-19.1.0-py2.py3-none-any.whl", hash = "sha256:69c0dbf2ed392de1cb5ec704444b08a5ef81680a61cb899dc08127123af36a79"},
     {file = "attrs-19.1.0.tar.gz", hash = "sha256:f0b870f674851ecbfbbbd364d6b5cbdff9dcedbc7f3f5e18a6891057f21fe399"},
+]
+bandit = [
+    {file = "bandit-1.6.2-py2.py3-none-any.whl", hash = "sha256:336620e220cf2d3115877685e264477ff9d9abaeb0afe3dc7264f55fa17a3952"},
+    {file = "bandit-1.6.2.tar.gz", hash = "sha256:41e75315853507aa145d62a78a2a6c5e3240fe14ee7c601459d0df9418196065"},
 ]
 black = [
     {file = "black-19.10b0-py36-none-any.whl", hash = "sha256:1b30e59be925fafc1ee4565e5e08abef6b03fe455102883820fe5ee2e4734e0b"},
@@ -488,6 +565,14 @@ flake8 = [
     {file = "flake8-3.7.8-py2.py3-none-any.whl", hash = "sha256:8e9dfa3cecb2400b3738a42c54c3043e821682b9c840b0448c0503f781130696"},
     {file = "flake8-3.7.8.tar.gz", hash = "sha256:19241c1cbc971b9962473e4438a2ca19749a7dd002dd1a946eaba171b4114548"},
 ]
+gitdb = [
+    {file = "gitdb-4.0.4-py3-none-any.whl", hash = "sha256:ba1132c0912e8c917aa8aa990bee26315064c7b7f171ceaaac0afeb1dc656c6a"},
+    {file = "gitdb-4.0.4.tar.gz", hash = "sha256:6f0ecd46f99bb4874e5678d628c3a198e2b4ef38daea2756a2bfd8df7dd5c1a5"},
+]
+gitpython = [
+    {file = "GitPython-3.1.1-py3-none-any.whl", hash = "sha256:71b8dad7409efbdae4930f2b0b646aaeccce292484ffa0bc74f1195582578b3d"},
+    {file = "GitPython-3.1.1.tar.gz", hash = "sha256:6d4f10e2aaad1864bb0f17ec06a2c2831534140e5883c350d58b4e85189dab74"},
+]
 importlib-metadata = [
     {file = "importlib_metadata-0.21-py2.py3-none-any.whl", hash = "sha256:9a9f75ce32e78170905888acbf2376a81d3f21ecb3bb4867050413411d3ca7a9"},
     {file = "importlib_metadata-0.21.tar.gz", hash = "sha256:0c505102757e7fa28b9f0958d8bc81301159dea16e2649858c92edc158b78a83"},
@@ -515,6 +600,10 @@ pathlib2 = [
 pathspec = [
     {file = "pathspec-0.8.0-py2.py3-none-any.whl", hash = "sha256:7d91249d21749788d07a2d0f94147accd8f845507400749ea19c1ec9054a12b0"},
     {file = "pathspec-0.8.0.tar.gz", hash = "sha256:da45173eb3a6f2a5a487efba21f050af2b41948be6ab52b6a1e3ff22bb8b7061"},
+]
+pbr = [
+    {file = "pbr-5.4.5-py2.py3-none-any.whl", hash = "sha256:579170e23f8e0c2f24b0de612f71f648eccb79fb1322c814ae6b3c07b5ba23e8"},
+    {file = "pbr-5.4.5.tar.gz", hash = "sha256:07f558fece33b05caf857474a366dfcc00562bca13dd8b47b2b3e22d9f9bf55c"},
 ]
 pluggy = [
     {file = "pluggy-0.13.0-py2.py3-none-any.whl", hash = "sha256:0db4b7601aae1d35b4a033282da476845aa19185c1e6964b25cf324b5e4ec3e6"},
@@ -544,6 +633,19 @@ pytest-cov = [
     {file = "pytest-cov-2.7.1.tar.gz", hash = "sha256:e00ea4fdde970725482f1f35630d12f074e121a23801aabf2ae154ec6bdd343a"},
     {file = "pytest_cov-2.7.1-py2.py3-none-any.whl", hash = "sha256:2b097cde81a302e1047331b48cadacf23577e431b61e9c6f49a1170bbe3d3da6"},
 ]
+pyyaml = [
+    {file = "PyYAML-5.3.1-cp27-cp27m-win32.whl", hash = "sha256:74809a57b329d6cc0fdccee6318f44b9b8649961fa73144a98735b0aaf029f1f"},
+    {file = "PyYAML-5.3.1-cp27-cp27m-win_amd64.whl", hash = "sha256:240097ff019d7c70a4922b6869d8a86407758333f02203e0fc6ff79c5dcede76"},
+    {file = "PyYAML-5.3.1-cp35-cp35m-win32.whl", hash = "sha256:4f4b913ca1a7319b33cfb1369e91e50354d6f07a135f3b901aca02aa95940bd2"},
+    {file = "PyYAML-5.3.1-cp35-cp35m-win_amd64.whl", hash = "sha256:cc8955cfbfc7a115fa81d85284ee61147059a753344bc51098f3ccd69b0d7e0c"},
+    {file = "PyYAML-5.3.1-cp36-cp36m-win32.whl", hash = "sha256:7739fc0fa8205b3ee8808aea45e968bc90082c10aef6ea95e855e10abf4a37b2"},
+    {file = "PyYAML-5.3.1-cp36-cp36m-win_amd64.whl", hash = "sha256:69f00dca373f240f842b2931fb2c7e14ddbacd1397d57157a9b005a6a9942648"},
+    {file = "PyYAML-5.3.1-cp37-cp37m-win32.whl", hash = "sha256:d13155f591e6fcc1ec3b30685d50bf0711574e2c0dfffd7644babf8b5102ca1a"},
+    {file = "PyYAML-5.3.1-cp37-cp37m-win_amd64.whl", hash = "sha256:73f099454b799e05e5ab51423c7bcf361c58d3206fa7b0d555426b1f4d9a3eaf"},
+    {file = "PyYAML-5.3.1-cp38-cp38-win32.whl", hash = "sha256:06a0d7ba600ce0b2d2fe2e78453a470b5a6e000a985dd4a4e54e436cc36b0e97"},
+    {file = "PyYAML-5.3.1-cp38-cp38-win_amd64.whl", hash = "sha256:95f71d2af0ff4227885f7a6605c37fd53d3a106fcab511b8860ecca9fcf400ee"},
+    {file = "PyYAML-5.3.1.tar.gz", hash = "sha256:b8eac752c5e14d3eca0e6dd9199cd627518cb5ec06add0de9d32baeee6fe645d"},
+]
 regex = [
     {file = "regex-2020.4.4-cp27-cp27m-win32.whl", hash = "sha256:90742c6ff121a9c5b261b9b215cb476eea97df98ea82037ec8ac95d1be7a034f"},
     {file = "regex-2020.4.4-cp27-cp27m-win_amd64.whl", hash = "sha256:24f4f4062eb16c5bbfff6a22312e8eab92c2c99c51a02e39b4eae54ce8255cd1"},
@@ -571,9 +673,17 @@ six = [
     {file = "six-1.12.0-py2.py3-none-any.whl", hash = "sha256:3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c"},
     {file = "six-1.12.0.tar.gz", hash = "sha256:d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"},
 ]
+smmap = [
+    {file = "smmap-3.0.2-py2.py3-none-any.whl", hash = "sha256:52ea78b3e708d2c2b0cfe93b6fc3fbeec53db913345c26be6ed84c11ed8bebc1"},
+    {file = "smmap-3.0.2.tar.gz", hash = "sha256:b46d3fc69ba5f367df96d91f8271e8ad667a198d5a28e215a6c3d9acd133a911"},
+]
 speedtest-cli = [
     {file = "speedtest-cli-2.1.2.tar.gz", hash = "sha256:cf1d386222f94c324e3125ba9a0d187e46d4a13dca08c023bdb9a23096be2e54"},
     {file = "speedtest_cli-2.1.2-py2.py3-none-any.whl", hash = "sha256:2335306da12014c2da750db3befa3ddf424a303ddbaa399fbfb6a1bf870a5532"},
+]
+stevedore = [
+    {file = "stevedore-1.32.0-py2.py3-none-any.whl", hash = "sha256:a4e7dc759fb0f2e3e2f7d8ffe2358c19d45b9b8297f393ef1256858d82f69c9b"},
+    {file = "stevedore-1.32.0.tar.gz", hash = "sha256:18afaf1d623af5950cc0f7e75e70f917784c73b652a34a12d90b309451b5500b"},
 ]
 toml = [
     {file = "toml-0.10.0-py2.7.egg", hash = "sha256:f1db651f9657708513243e61e6cc67d101a39bad662eaa9b5546f789338e07a3"},
