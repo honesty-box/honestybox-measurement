@@ -1,3 +1,10 @@
+[![PyPI version](https://badge.fury.io/py/honestybox-measurement.svg)](https://badge.fury.io/py/honestybox-measurement)
+[![PyPI Supported Python Versions](https://img.shields.io/pypi/pyversions/honestybox-measurement.svg)](https://pypi.python.org/pypi/honestybox-measurement/)
+[![GitHub license](https://img.shields.io/github/license/honesty-box/honestybox-measurement)](https://github.com/honesty-box/honestybox-measurement/blob/master/LICENSE)
+[![GitHub Actions (Tests)](https://github.com/honesty-box/honestybox-measurement/workflows/Tests/badge.svg)](https://github.com/honesty-box/honestybox-measurement)
+[![GitHub Actions (Quality)](https://github.com/honesty-box/honestybox-measurement/workflows/Quality/badge.svg)](https://github.com/honesty-box/honestybox-measurement)
+[![Honesty Box Twitter](https://img.shields.io/twitter/follow/honestybox?style=social)](https://twitter.com/honestybox)
+
 # honestybox-measurement
 
 A framework for measuring things and producing structured results.
