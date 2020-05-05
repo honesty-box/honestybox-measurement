@@ -1,0 +1,17 @@
+name: Quality
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Black Code Formatter
+      uses: jpetrucciani/black-check@master
+    - name: Flake8 Showstopper Linter
+      uses: cclauss/Find-Python-syntax-errors-action@master
+    - name: Flake8 Style Linter
+      uses: jonasrk/flake8-action@master
+      with:
+        args: "--count --exit-zero --max-complexity=10 --max-line-length=88 --statistics"

@@ -27,12 +27,20 @@ isort = "^4.3"
 pytest-cov = "^2.7"
 black = {version = "^19.10b0", allow-prereleases = true, python = ">=3.6"}
 bandit = "^1.6.2"
+
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-isolated_build=true
+isolated_build = true
+skipsdist = true
 envlist = py35,py36,py37,py38
-skipsdist = True
+
+[gh-actions]
+python =
+    3.5: py35
+    3.6: py36
+    3.7: py37
+    3.8: py38, mypy
 
 [testenv]
 whitelist_externals = poetry
