@@ -15,3 +15,5 @@ jobs:
       uses: jonasrk/flake8-action@master
       with:
         args: "--count --exit-zero --max-complexity=10 --max-line-length=88 --statistics"
+    - name: Bandit Security Linter
+      uses: jpetrucciani/bandit-check@master
