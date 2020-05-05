@@ -3,9 +3,11 @@ name = "honestybox-measurement"
 version = "1.0.4"
 description = "A framework for measuring things and producing structured results."
 authors = [
-    "Honesty Box <engineering@honestybox.com.au>",
     "James Stewart <james@amorphitec.io>",
     "Stuart Dines <me@stuartdines.com>"
+]
+maintainers = [
+    "Honesty Box <engineering@honestybox.com.au>",
 ]
 packages = [
     { include = "measurement" },
