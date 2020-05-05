@@ -4,7 +4,8 @@ version = "1.0.4"
 description = "A framework for measuring things and producing structured results."
 authors = [
     "James Stewart <james@amorphitec.io>",
-    "Stuart Dines <me@stuartdines.com>"
+    "Stuart Dines <me@stuartdines.com>",
+    "James Johnson <james.johnston@honestybox.com.au>"
 ]
 maintainers = [
     "Honesty Box <engineering@honestybox.com.au>",
