@@ -26,7 +26,7 @@ on `commit` and `push`. Install these hooks like so:
 
 ## Releases
 
-To ensure releases are always built on the latest codebase, *changes are only ever merged from master*.
+To ensure releases are always built on the latest codebase, *changes are only ever merged to `release` from `master`*.
 
 ### Creating a release
 1. Ensure that master is up to date:
@@ -49,7 +49,7 @@ To ensure releases are always built on the latest codebase, *changes are only ev
     git merge master
     ```
 
-4. Add a new release to CHANGELOG.md and include all changes in [Unreleased].
+4. Add a new release to `CHANGELOG.md` and include all changes in `[Unreleased]`.
 
 5. Update version number in `pyproject.toml`
 
@@ -57,13 +57,13 @@ To ensure releases are always built on the latest codebase, *changes are only ev
 
     ```shell script
     git add CHANGELOG.md pyproject.toml
-    git commit -m 'Release 0.0.1`
+    git commit -m 'Release x.y.z`
     ```
 
 7. Tag the commit with the release number:
 
     ```shell script
-     git tag 0.0.1
+     git tag x.y.z
     ```
 
 8. Push the commit and tags upstream:
@@ -88,7 +88,7 @@ To ensure releases are always built on the latest codebase, *changes are only ev
 2. Checkout the release:
 
     ```shell script
-    git checkout 0.0.1
+    git checkout x.y.z
     ```
 
 3. Publish the release:
