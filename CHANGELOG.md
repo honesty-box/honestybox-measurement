@@ -1,6 +1,11 @@
 ## Unreleased
+
+## [1.0.5] (2020-05-06)
 ### Changed
 * Updated dependencies
+
+### Fixed
+* Speedtestdotnet error on Python 3.5
 
 ## [1.0.4] (2020-04-09)
 ### Fixed
