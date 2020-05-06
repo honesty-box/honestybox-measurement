@@ -17,7 +17,7 @@ repos:
     rev: v1.0.4
     hooks:
     - id: python-bandit-vulnerability-check
-      args: []
+      args: [--verbose, --ini, .bandit]
       files: .py$
   - repo: local
     hooks:
