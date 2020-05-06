@@ -20,9 +20,10 @@ A framework for measuring things and producing structured results.
 [pre-commit](https://pre-commit.com/) hooks are included to ensure code quality
 on `commit` and `push`. Install these hooks like so:
 
-    ```shell script
-    pre-commit install && pre-commit install -t pre-push
-    ```
+```shell script
+$ pre-commit install && pre-commit install -t pre-push
+asd
+```
 
 ## Releases
 
@@ -32,21 +33,21 @@ To ensure releases are always built on the latest codebase, *changes are only ev
 1. Ensure that master is up to date:
 
     ```shell script
-    git checkout master
-    git pull origin
+    $ git checkout master
+    $ git pull origin
     ```
 
 2. Switch to release and ensure it is up to date:
 
     ```shell script
-    git checkout release
-    git pull origin
+    $ git checkout release
+    $ git pull origin
     ```
 
 3. Merge from master:
 
     ```shell script
-    git merge master
+    $ git merge master
     ```
 
 4. Add a new release to `CHANGELOG.md` and include all changes in `[Unreleased]`.
@@ -56,28 +57,28 @@ To ensure releases are always built on the latest codebase, *changes are only ev
 6. Commit the changes to the `release` branch with comment `Release <version number>`
 
     ```shell script
-    git add CHANGELOG.md pyproject.toml
-    git commit -m 'Release x.y.z`
+    $ git add CHANGELOG.md pyproject.toml
+    $ git commit -m 'Release x.y.z`
     ```
 
 7. Tag the commit with the release number:
 
     ```shell script
-     git tag x.y.z
+    $ git tag x.y.z
     ```
 
 8. Push the commit and tags upstream:
 
     ```shell script
-    git push && git push --tags
+    $ git push && git push --tags
     ```
 
 9. Merge changes into master and push upstream:
 
     ```shell script
-    git checkout master
-    git merge release
-    git push
+    $ git checkout master
+    $ git merge release
+    $ git push
     ```
 
 
@@ -88,11 +89,11 @@ To ensure releases are always built on the latest codebase, *changes are only ev
 2. Checkout the release:
 
     ```shell script
-    git checkout x.y.z
+    $ git checkout x.y.z
     ```
 
 3. Publish the release:
 
     ```shell script
-    poetry publish --build
+    $ poetry publish --build
     ```
