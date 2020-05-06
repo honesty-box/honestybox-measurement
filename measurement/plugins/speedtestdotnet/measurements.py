@@ -6,9 +6,7 @@ from validators import ValidationFailure
 import speedtest
 
 from measurement.measurements import BaseMeasurement
-from measurement.plugins.speedtestdotnet.results import (
-    SpeedtestdotnetMeasurementResult
-)
+from measurement.plugins.speedtestdotnet.results import SpeedtestdotnetMeasurementResult
 from measurement.results import Error
 from measurement.units import RatioUnit, TimeUnit, StorageUnit, NetworkUnit
 
@@ -17,15 +15,16 @@ SPEEDTEST_ERRORS = {
     "speedtest-config": "speedtest failed to retrieve a config",
     "speedtest-best-server": "speedtest could not find the best server",
     "speedtest-share": "speedtest could not share results",
-    "speedtest-convert": "could not convert result values"
+    "speedtest-convert": "could not convert result values",
 }
+
 
 class SpeedtestdotnetMeasurement(BaseMeasurement):
     def __init__(self, id, servers=None):
         super(SpeedtestdotnetMeasurement, self).__init__(id=id)
         self.id = id
         self.servers = servers
-        
+
     def measure(self, share=False):
         """
         @params share: Boolean determining whether to generate a PNG on speedtest.net displaying the result of the test.
@@ -64,7 +63,7 @@ class SpeedtestdotnetMeasurement(BaseMeasurement):
                 server_id=results_dict["server"]["id"],
                 server_sponsor=results_dict["server"]["sponsor"],
                 server_host=results_dict["server"]["host"],
-                errors=[]
+                errors=[],
             )
         except ValueError as e:
             return self._get_speedtest_error("speedtest-convert", traceback=str(e))
@@ -83,7 +82,9 @@ class SpeedtestdotnetMeasurement(BaseMeasurement):
             server_host=None,
             errors=[
                 Error(
-                    key=key, description=SPEEDTEST_ERRORS.get(key, ""), traceback=traceback
+                    key=key,
+                    description=SPEEDTEST_ERRORS.get(key, ""),
+                    traceback=traceback,
                 )
             ],
         )

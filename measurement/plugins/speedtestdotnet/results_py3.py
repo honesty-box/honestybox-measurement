@@ -9,9 +9,19 @@ from measurement.units import TimeUnit, StorageUnit, RatioUnit, NetworkUnit
 class SpeedtestdotnetMeasurementResult(MeasurementResult):
     """Encapsulates the results from a speedtestdotnet measurement.
 
-    :param host: The host that was used to perform the latency
-    measurement.
-
+    :param download_rate: The measured download rate.
+    :param download_rate_unit: The unit of measurement of `download_rate`.
+    :param upload_rate: The measured upload rate.
+    :param upload_rate_unit: The unit of measurement of `upload_rate`.
+    :param latency: The measured latency.
+    :param server_name: The name of the speedtest.net server used to perform
+    the speedtestdotnet measurement.
+    :param server_id: The id of the speedtest.net server used to perform the
+    speedtestdotnet measurement.
+    :param server_sponsor: The sponsor of the speedtest.net server used to
+    perform the speedtestdotnet measurement.
+    :param server_host: The host name of the speedtest.net server used to
+    perform the speedtestdotnet measurement.
     """
 
     download_rate: typing.Optional[float]

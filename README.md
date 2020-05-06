@@ -1,3 +1,10 @@
+[![PyPI version](https://badge.fury.io/py/honestybox-measurement.svg)](https://badge.fury.io/py/honestybox-measurement)
+[![PyPI Supported Python Versions](https://img.shields.io/pypi/pyversions/honestybox-measurement.svg)](https://pypi.python.org/pypi/honestybox-measurement/)
+[![GitHub license](https://img.shields.io/github/license/honesty-box/honestybox-measurement)](https://github.com/honesty-box/honestybox-measurement/blob/master/LICENSE)
+[![GitHub Actions (Tests)](https://github.com/honesty-box/honestybox-measurement/workflows/Tests/badge.svg)](https://github.com/honesty-box/honestybox-measurement)
+[![GitHub Actions (Quality)](https://github.com/honesty-box/honestybox-measurement/workflows/Quality/badge.svg)](https://github.com/honesty-box/honestybox-measurement)
+[![Honesty Box Twitter](https://img.shields.io/twitter/follow/honestybox?style=social)](https://twitter.com/honestybox)
+
 # honestybox-measurement
 
 A framework for measuring things and producing structured results.
@@ -6,10 +13,20 @@ A framework for measuring things and producing structured results.
 
 `honestybox-measurement` supports Python 3.5 to Python 3.8 inclusively.
 
+## Development
+
+### Git hooks
+
+[pre-commit](https://pre-commit.com/) hooks are included to ensure code quality
+on `commit` and `push`. Install these hooks like so:
+
+    ```shell script
+    pre-commit install && pre-commit install -t pre-push
+    ```
 
 ## Releases
 
-To ensure releases are always built on the latest codebase, *changes are only ever merged from master*.
+To ensure releases are always built on the latest codebase, *changes are only ever merged to `release` from `master`*.
 
 ### Creating a release
 1. Ensure that master is up to date:
@@ -32,7 +49,7 @@ To ensure releases are always built on the latest codebase, *changes are only ev
     git merge master
     ```
 
-4. Add a new release to CHANGELOG.md and include all changes in [Unreleased].
+4. Add a new release to `CHANGELOG.md` and include all changes in `[Unreleased]`.
 
 5. Update version number in `pyproject.toml`
 
@@ -40,13 +57,13 @@ To ensure releases are always built on the latest codebase, *changes are only ev
 
     ```shell script
     git add CHANGELOG.md pyproject.toml
-    git commit -m 'Release 0.0.1`
+    git commit -m 'Release x.y.z`
     ```
 
 7. Tag the commit with the release number:
 
     ```shell script
-     git tag 0.0.1
+     git tag x.y.z
     ```
 
 8. Push the commit and tags upstream:
@@ -66,12 +83,12 @@ To ensure releases are always built on the latest codebase, *changes are only ev
 
 ### Publishing a release
 
-1. Install [poetry](https://poetry.eustace.io) 
+1. Install [poetry](https://poetry.eustace.io)
 
 2. Checkout the release:
 
     ```shell script
-    git checkout 0.0.1
+    git checkout x.y.z
     ```
 
 3. Publish the release:
