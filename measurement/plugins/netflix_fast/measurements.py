@@ -1,5 +1,22 @@
 """
-As of 2020/05/18 the fast.com uses 5s minimum, 30s maximum
+Using the netflix_fast v2 api, the test collects some details about the client, and launches 1 thread per provided URL to download. Every `SLEEP_SECONDS` (presently 0.2) the test will append the latest speed (calculated by total downloaded bytes/total time taken) before checking for, in order:
+    - `MAX_TIME` (presently 30s) expired.
+    - Results have become "stabilised"
+    - All threads have finished downloading
+    - A single thread has finished downloading, IF `terminate_on_thread_complete=True`
+
+Stabilisation is considered to be:
+    - Downloaded has been running longer than `MIN_TIME` (presently 3s)
+    - AND more than or equal to `STABLE_MEASUREMENTS_LENGTH` (presently 6) have been recorded
+    - AND maximum percentage delta in these measurements is `< STABLE_MEASUREMENTS_DELTA` presently (2%)
+
+In cases where the test concludes independently of the main loop (i.e when `reason_terminated == "thread_complete"`) The speed at the instant the thread completes is used, otherwise the final speed is used.
+
+All this is then packaged into a `NetflixFastMeasurementResult`
+
+After this, each of the URLs downloaded from has a latency test then have an Honesty-Box LatencyMeasurement test run against them, the results of which, along with the location and download rates/sizes for each thread are put into a `NetflixFastThreadResult`.
+
+All these results are then returned as a list.
 """
 
 import requests
@@ -50,7 +67,14 @@ done = 0
 
 
 class NetflixFastTestMeasurement(BaseMeasurement):
-    def __init__(self, id, urlcount=3, terminate_on_thread_complete=True):
+    def __init__(
+        self,
+        id,
+        urlcount=3,
+        max_time=30,
+        terminate_on_thread_complete=True,
+        terminate_on_result_stable=True,
+    ):
         super(NetflixFastTestMeasurement, self).__init__(id=id)
         self.id = id
         self.urlcount = urlcount
