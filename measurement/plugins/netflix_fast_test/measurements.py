@@ -26,12 +26,12 @@ NETFLIX_ERRORS = {
     "netflix-err": "Netflix test encountered an unknown error",
     "netflix-ping": "Netflix test encountered an error when pinging hosts",
     "netflix-response": "Netflix test received an invalid response from fast.com",
-    "netflix-script-response": "Netflix test received an invalid response from script",
     "netflix-script-regex": "Netflix test failed to find script in the response",
-    "netflix-token": "Netflix test failed to find the token",
+    "netflix-script-response": "Netflix test received an invalid response from script",
     "netflix-token-regex": "Netflix test failed to find token in the response",
-    "netflix-url-response": "Netflix test received an invalid response when querying for URLs",
-    "netflix-json": "Netflix test failed to decode URLs",
+    "netflix-api-response": "Netflix test received an invalid response when querying for URLs",
+    "netflix-api-json": "Netflix test failed to decode URLs",
+    "netflix-api-parse": "Netflix test failed interpret elements of the decoded JSON",
     "netflix-connection": "Netflix test failed to connect to download URLs",
     "netflix-download": "Netflix test encountered an error downloading data",
 }
@@ -59,12 +59,7 @@ class NetflixFastTestMeasurement(BaseMeasurement):
         self.exit_threads = False
         self.total = 0
         self.sessions = []
-        self.client_data = {
-            "asn": None,
-            "ip": None,
-            "isp": None,
-            "location": None
-        }
+        self.client_data = {"asn": None, "ip": None, "isp": None, "location": None}
         self.targets = []
         self.thread_results = [
             {
@@ -73,8 +68,9 @@ class NetflixFastTestMeasurement(BaseMeasurement):
                 "download_size": 0,
                 "download_rate": 0,
                 "url": None,
-                "location": None
-            } for i in range(self.urlcount)
+                "location": None,
+            }
+            for i in range(self.urlcount)
         ]
         self.completed_total = 0
         self.completed_elapsed_time = None
@@ -84,7 +80,6 @@ class NetflixFastTestMeasurement(BaseMeasurement):
         results.append(self._get_fast_result())
         for thread_result in self.thread_results:
             results.append(self._get_url_result(thread_result))
-        print(results)
         return results
 
     def _get_fast_result(self):
@@ -92,39 +87,69 @@ class NetflixFastTestMeasurement(BaseMeasurement):
         try:
             resp = self._get_response(s)
         except ConnectionError as e:
-            return self._get_netflix_error("netflix-response", traceback=e)
+            return self._get_netflix_error("netflix-response", traceback=str(e))
 
         try:
             script = re.search(r'<script src="(.*?)">', resp.text).group(1)
         except AttributeError:
-            return self._get_netflix_error("netflix-regex", traceback=resp.text)
+            return self._get_netflix_error("netflix-script-regex", traceback=resp.text)
 
         try:
             script_resp = s.get("https://fast.com{script}".format(script=script))
         except ConnectionError as e:
-            return self._get_netflix_error("netflix-script-response", traceback=e)
+            return self._get_netflix_error("netflix-script-response", traceback=str(e))
 
         try:
             token = re.search(r'token:"(.*?)"', script_resp.text).group(1)
         except AttributeError as e:
-            return self._get_netflix_error("netflix-token", traceback=e)
+            return self._get_netflix_error(
+                "netflix-token-regex", traceback=script_resp.text
+            )
 
         try:
             self._query_api(s, token)
+        except ConnectionError as e:
+            return self._get_netflix_error("netflix-api-response", traceback=str(e))
         except json.decoder.JSONDecodeError as e:
-            return self._get_netflix_error("netflix-json", traceback=e)
-        except AttributeError as e:
-            return self._get_netflix_error("netflix-api", traceback=e)
+            return self._get_netflix_error("netflix-api-json", traceback=str(e))
+        except TypeError as e:
+            return self._get_netflix_error("netflix-api-parse", traceback=str(e))
+        except KeyError as e:
+            return self._get_netflix_error("netflix-api-parse", traceback=str(e))
 
         try:
-            conns = [self._get_connection(target["url"]) for target in self.thread_results]
+            conns = [
+                self._get_connection(target["url"]) for target in self.thread_results
+            ]
         except ConnectionError as e:
-            return self._get_netflix_error("netflix-connection", traceback=e)
+            return self._get_netflix_error("netflix-connection", traceback=str(e))
 
+        fast_data = self._manage_threads(conns)
+
+        return NetflixFastMeasurementResult(
+            id=self.id,
+            download_rate=float(fast_data["speed_mbps"]),
+            download_rate_unit=NetworkUnit("Mbit/s"),
+            download_size=float(fast_data["total"]),
+            download_size_unit=StorageUnit("B"),
+            asn=self.client_data["asn"],
+            ip=self.client_data["ip"],
+            isp=self.client_data["isp"],
+            city=self.client_data["location"]["city"],
+            country=self.client_data["location"]["country"],
+            urlcount=self.urlcount,
+            reason_terminated=fast_data["reason_terminated"],
+            errors=[],
+        )
+
+    def _manage_threads(self, conns):
         # Create worker threads
         threads = [None] * len(self.thread_results)
         for i in range(len(self.thread_results)):
-            threads[i] = Thread(target=self._threaded_download, args=(conns[i], self.thread_results[i], time.time()))
+            threads[i] = Thread(
+                target=self._threaded_download,
+                args=(conns[i], self.thread_results[i], time.time()),
+            )
             threads[i].daemon = True
             threads[i].start()
 
@@ -151,29 +176,26 @@ class NetflixFastTestMeasurement(BaseMeasurement):
                 for thread in threads:
                     thread.join()
 
-                if ((self.completed_elapsed_time is not None) & (reason_terminated == "thread_complete")):
+                if (self.completed_elapsed_time is not None) & (
+                    reason_terminated == "thread_complete"
+                ):
                     # Record the speed at the time the thread finished downloading
-                    speed_mbps = self.completed_total / self.completed_elapsed_time / 1024 / 1024 * 8
+                    speed_mbps = (
+                        self.completed_total
+                        / self.completed_elapsed_time
+                        / 1024
+                        / 1024
+                        * 8
+                    )
                 else:
                     elapsed_time = time.time() - start_time
                     speed_mbps = total / elapsed_time / 1024 / 1024 * 8
 
-                res = NetflixFastMeasurementResult(
-                    id=self.id,
-                    download_rate=float(speed_mbps),
-                    download_rate_unit=NetworkUnit("Mbit/s"),
-                    download_size=float(total),
-                    download_size_unit=StorageUnit("B"),
-                    asn=self.client_data["asn"],
-                    ip=self.client_data["ip"],
-                    isp=self.client_data["isp"],
-                    city=self.client_data["location"]["city"],
-                    country=self.client_data["location"]["country"],
-                    urlcount=self.urlcount,
-                    reason_terminated=reason_terminated,
-                    errors=[],
-                )
-                return res
+                return {
+                    "speed_mbps": speed_mbps,
+                    "total": total,
+                    "reason_terminated": reason_terminated,
+                }
             time.sleep(SLEEP_SECONDS)
 
     def _threaded_download(self, conn, thread_result, start_time):
@@ -193,7 +215,9 @@ class NetflixFastTestMeasurement(BaseMeasurement):
             for global_thread_result in self.thread_results:
                 self.completed_total += global_thread_result["download_size"]
 
-        thread_result["download_rate"] = thread_result["download_size"] / elapsed_time / 1024 / 1024 * 8
+        thread_result["download_rate"] = (
+            thread_result["download_size"] / elapsed_time / 1024 / 1024 * 8
+        )
         thread_result["elapsed_time"] = elapsed_time
         self.finished_threads += 1
 
@@ -211,7 +235,7 @@ class NetflixFastTestMeasurement(BaseMeasurement):
     def _is_stabilised(self, percent_deltas, elapsed_time):
         return (
             elapsed_time > MIN_TIME
-            and len(percent_deltas) > STABLE_MEASUREMENTS_LENGTH
+            and len(percent_deltas) >= STABLE_MEASUREMENTS_LENGTH
             and max(percent_deltas) < STABLE_MEASUREMENTS_DELTA
         )
 
@@ -225,12 +249,14 @@ class NetflixFastTestMeasurement(BaseMeasurement):
         return conn
 
     def _is_test_complete(self, elapsed_time, percent_deltas):
-        if (elapsed_time > MAX_TIME):
+        if elapsed_time > MAX_TIME:
             return "time_expired"
-        if ((self.finished_threads >= 1) & (self.terminate_on_thread_complete)):
-            return "thread_complete"
         if self._is_stabilised(percent_deltas, elapsed_time):
             return "result_stabilised"
+        if self.finished_threads == len(self.thread_results):
+            return "all_complete"
+        if (self.finished_threads >= 1) & (self.terminate_on_thread_complete):
+            return "thread_complete"
         return False
 
     def _get_url_result(self, thread_result):
@@ -268,11 +294,13 @@ class NetflixFastTestMeasurement(BaseMeasurement):
             download_rate_unit=None,
             download_size=None,
             download_size_unit=None,
-            ans=None,
+            asn=None,
             ip=None,
             isp=None,
-            location=None,
+            city=None,
+            country=None,
             urlcount=self.urlcount,
+            reason_terminated=None,
             errors=[
                 Error(
                     key=key,

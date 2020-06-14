@@ -22,6 +22,8 @@ validators = "^0.13.0"
 dataclasses = {version = "^0.6.0", python = "^3.6.0"}
 six = "^1.12"
 speedtest-cli = "^2.1"
+requests = "^2.23.0"
+statistics = "^1.0.3"
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
 tox = "^3.13"

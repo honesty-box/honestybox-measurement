@@ -1,4 +1,6 @@
 ## Unreleased
+### Added
+* [420] (https://trello.com/c/TRSgdsJ4/420-update-netflix-test-to-capture-more-data-fields#comment-5ee09322d9002d808b4ad7a7) New netflixtest
 
 ## [1.0.5] (2020-05-06)
 ### Changed
