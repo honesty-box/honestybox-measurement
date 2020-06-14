@@ -1,6 +1,6 @@
 """
-Using the netflix_fast v2 api, the test collects some details about the client, and launches 1 thread per provided URL to download. Every `SLEEP_SECONDS` (presently 0.2) the test will append the latest speed (calculated by total downloaded bytes/total time taken) before checking for, in order:
-    - `MAX_TIME` (presently 30s) expired.
+Using the netflix_fast v2 api, the test collects some details about the client, and launches 1 thread per provided URL to download. Every `sleep_seconds` (presently 0.2) the test will append the latest speed (calculated by total downloaded bytes/total time taken) before checking for, in order:
+    - `max_time` (presently 30s) expired.
     - Results have become "stabilised"
     - All threads have finished downloading
     - A single thread has finished downloading, IF `terminate_on_thread_complete=True`
@@ -55,8 +55,6 @@ NETFLIX_ERRORS = {
 # CHUNK_SIZE = 100 * 1024
 CHUNK_SIZE = 64 * 2 ** 10
 MIN_TIME = 3
-MAX_TIME = 30
-SLEEP_SECONDS = 0.2
 PING_COUNT = 4
 STABLE_MEASUREMENTS_LENGTH = 6
 STABLE_MEASUREMENTS_DELTA = 2
@@ -72,13 +70,17 @@ class NetflixFastTestMeasurement(BaseMeasurement):
         id,
         urlcount=3,
         max_time=30,
+        sleep_seconds=0.2,
         terminate_on_thread_complete=True,
         terminate_on_result_stable=True,
     ):
         super(NetflixFastTestMeasurement, self).__init__(id=id)
         self.id = id
         self.urlcount = urlcount
+        self.max_time = max_time
+        self.sleep_seconds = sleep_seconds
         self.terminate_on_thread_complete = terminate_on_thread_complete
+        self.terminate_on_result_stable = terminate_on_result_stable
         self.finished_threads = 0
         self.exit_threads = False
         self.total = 0
@@ -220,7 +222,7 @@ class NetflixFastTestMeasurement(BaseMeasurement):
                     "total": total,
                     "reason_terminated": reason_terminated,
                 }
-            time.sleep(SLEEP_SECONDS)
+            time.sleep(self.sleep_seconds)
 
     def _threaded_download(self, conn, thread_result, start_time):
         # Iterate through the URL content
@@ -273,13 +275,13 @@ class NetflixFastTestMeasurement(BaseMeasurement):
         return conn
 
     def _is_test_complete(self, elapsed_time, percent_deltas):
-        if elapsed_time > MAX_TIME:
+        if elapsed_time > self.max_time:
             return "time_expired"
-        if self._is_stabilised(percent_deltas, elapsed_time):
+        if (self.terminate_on_result_stable) & (self._is_stabilised(percent_deltas, elapsed_time)):
             return "result_stabilised"
         if self.finished_threads == len(self.thread_results):
             return "all_complete"
-        if (self.finished_threads >= 1) & (self.terminate_on_thread_complete):
+        if (self.terminate_on_thread_complete) & (self.finished_threads >= 1):
             return "thread_complete"
         return False
 

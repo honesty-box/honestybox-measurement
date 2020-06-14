@@ -10,8 +10,6 @@ from measurement.plugins.netflix_fast.measurements import (
     NETFLIX_ERRORS,
     CHUNK_SIZE,
     MIN_TIME,
-    MAX_TIME,
-    SLEEP_SECONDS,
     PING_COUNT,
     STABLE_MEASUREMENTS_LENGTH,
     STABLE_MEASUREMENTS_DELTA,
