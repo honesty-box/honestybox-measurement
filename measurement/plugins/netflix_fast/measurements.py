@@ -52,16 +52,11 @@ NETFLIX_ERRORS = {
     "netflix-connection": "Netflix test failed to connect to download URLs",
     "netflix-download": "Netflix test encountered an error downloading data",
 }
-# CHUNK_SIZE = 100 * 1024
 CHUNK_SIZE = 64 * 2 ** 10
 MIN_TIME = 3
 PING_COUNT = 4
 STABLE_MEASUREMENTS_LENGTH = 6
 STABLE_MEASUREMENTS_DELTA = 2
-# URLCOUNT = 3
-
-total = 0
-done = 0
 
 
 class NetflixFastTestMeasurement(BaseMeasurement):
@@ -127,7 +122,7 @@ class NetflixFastTestMeasurement(BaseMeasurement):
 
         try:
             token = re.search(r'token:"(.*?)"', script_resp.text).group(1)
-        except AttributeError as e:
+        except AttributeError:
             return self._get_netflix_error(
                 "netflix-token-regex", traceback=script_resp.text
             )
@@ -236,7 +231,7 @@ class NetflixFastTestMeasurement(BaseMeasurement):
         elapsed_time = completed_time - start_time
 
         # If this is the first thread to complete, record the time and total at this point
-        if self.completed_elapsed_time == None:
+        if self.completed_elapsed_time is None:
             self.completed_elapsed_time = elapsed_time
             for global_thread_result in self.thread_results:
                 self.completed_total += global_thread_result["download_size"]
@@ -277,7 +272,9 @@ class NetflixFastTestMeasurement(BaseMeasurement):
     def _is_test_complete(self, elapsed_time, percent_deltas):
         if elapsed_time > self.max_time:
             return "time_expired"
-        if (self.terminate_on_result_stable) & (self._is_stabilised(percent_deltas, elapsed_time)):
+        if (self.terminate_on_result_stable) & (
+            self._is_stabilised(percent_deltas, elapsed_time)
+        ):
             return "result_stabilised"
         if self.finished_threads == len(self.thread_results):
             return "all_complete"
