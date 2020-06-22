@@ -56,6 +56,7 @@ MIN_TIME_SECONDS = 3
 PING_COUNT = 4
 MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE = 6
 STABLE_MEASUREMENTS_DELTA = 2
+BITS_PER_BYTE = 8
 
 
 class NetflixFastMeasurement(BaseMeasurement):
@@ -153,8 +154,8 @@ class NetflixFastMeasurement(BaseMeasurement):
 
         return NetflixFastMeasurementResult(
             id=self.id,
-            download_rate=float(fast_data["speed_bytes"]),
-            download_rate_unit=NetworkUnit("Byte/s"),
+            download_rate=float(fast_data["speed_bits"]),
+            download_rate_unit=NetworkUnit("bit/s"),
             download_size=float(fast_data["total"]),
             download_size_unit=StorageUnit("B"),
             asn=self.client_data["asn"],
@@ -189,8 +190,8 @@ class NetflixFastMeasurement(BaseMeasurement):
             total = 0
             for thread_result in self.thread_results:
                 total += thread_result["download_size"]
-            speed_bytes = total / elapsed_time
-            recent_measurements.append(speed_bytes)
+            speed_bits = total / elapsed_time * BITS_PER_BYTE
+            recent_measurements.append(speed_bits)
 
             if (
                 len(recent_measurements)
@@ -198,7 +199,7 @@ class NetflixFastMeasurement(BaseMeasurement):
             ):
                 # Calculate percentage difference to the average of the last ten measurements
                 percent_deltas.append(
-                    (speed_bytes - mean(recent_measurements)) / speed_bytes * 100
+                    (speed_bits - mean(recent_measurements)) / speed_bits * 100
                 )
 
             if self._is_test_complete(elapsed_time, percent_deltas):
@@ -211,13 +212,17 @@ class NetflixFastMeasurement(BaseMeasurement):
                     reason_terminated == "thread_complete"
                 ):
                     # Record the speed at the time the thread finished downloading
-                    speed_bytes = self.completed_total / self.completed_elapsed_time
+                    speed_bits = (
+                        self.completed_total
+                        / self.completed_elapsed_time
+                        * BITS_PER_BYTE
+                    )
                 else:
                     elapsed_time = time.time() - start_time
-                    speed_bytes = total / elapsed_time
+                    speed_bits = total / elapsed_time * BITS_PER_BYTE
 
                 return {
-                    "speed_bytes": speed_bytes,
+                    "speed_bits": speed_bits,
                     "total": total,
                     "reason_terminated": reason_terminated,
                 }
@@ -241,7 +246,7 @@ class NetflixFastMeasurement(BaseMeasurement):
                 self.completed_total += global_thread_result["download_size"]
 
         thread_result["download_rate"] = (
-            thread_result["download_size"] / elapsed_time / 1024 / 1024 * 8
+            thread_result["download_size"] / elapsed_time * BITS_PER_BYTE
         )
         thread_result["elapsed_time"] = elapsed_time
         self.finished_threads += 1
@@ -300,7 +305,7 @@ class NetflixFastMeasurement(BaseMeasurement):
             download_size=thread_result["download_size"],
             download_size_unit=StorageUnit("B"),
             download_rate=thread_result["download_rate"],
-            download_rate_unit=NetworkUnit("Byte/s"),
+            download_rate_unit=NetworkUnit("bit/s"),
             minimum_latency=LatencyResult.minimum_latency,
             average_latency=LatencyResult.average_latency,
             maximum_latency=LatencyResult.maximum_latency,

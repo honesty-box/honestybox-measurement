@@ -69,14 +69,14 @@ class NetflixResultTestCase(TestCase):
             ],
         }
         self.fast_data_three = {
-            "speed_bytes": 1234,
+            "speed_bits": 1234,
             "total": 4321,
             "reason_terminated": "fake_reason",
         }
         self.fast_result_three = NetflixFastMeasurementResult(
             id="1",
-            download_rate=float(self.fast_data_three["speed_bytes"]),
-            download_rate_unit=NetworkUnit("Byte/s"),
+            download_rate=float(self.fast_data_three["speed_bits"]),
+            download_rate_unit=NetworkUnit("bit/s"),
             download_size=float(self.fast_data_three["total"]),
             download_size_unit=StorageUnit("B"),
             asn=self.api_response_three["client"]["asn"],
@@ -97,7 +97,7 @@ class NetflixResultTestCase(TestCase):
                 download_size=0,
                 download_size_unit=StorageUnit("B"),
                 download_rate=0,
-                download_rate_unit=NetworkUnit("Byte/s"),
+                download_rate_unit=NetworkUnit("bit/s"),
                 minimum_latency=0,
                 average_latency=0,
                 maximum_latency=0,
