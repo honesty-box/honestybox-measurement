@@ -151,6 +151,17 @@ class NetflixResultTestCase(TestCase):
         mock_session.get.side_effect = [mock_resp, mock_script_resp, mock_api_resp]
         mock_get_session.return_value = mock_session
         mock_manage_threads.return_value = self.fast_data_three
+        self.nft.thread_results = [
+            {
+                "index": i,
+                "elapsed_time": None,
+                "download_size": 0,
+                "download_rate": 0,
+                "url": None,
+                "location": None,
+            }
+            for i in range(self.nft.urlcount)  # Generate thread results dict structure
+        ]
 
         assert self.nft._get_fast_result() == self.fast_result_three
 
@@ -188,6 +199,17 @@ class NetflixResultTestCase(TestCase):
             m = mock.MagicMock()
             m.iter_content.return_value = ["BYTES" for iter in range(i)]
             conns.append(m)
+        nft.thread_results = [
+            {
+                "index": i,
+                "elapsed_time": None,
+                "download_size": 0,
+                "download_rate": 0,
+                "url": None,
+                "location": None,
+            }
+            for i in range(nft.urlcount)  # Generate thread results dict structure
+        ]
         x = nft._manage_threads(conns)
         assert (x["reason_terminated"] == "all_complete") & (x["total"] == 75)
 
@@ -620,4 +642,15 @@ class ErrorsTestCase(TestCase):
             ConnectionError("Failed to pretend to establish a new connection"),
         ]
         mock_get_session.return_value = mock_session
+        self.nft.thread_results = [
+            {
+                "index": i,
+                "elapsed_time": None,
+                "download_size": 0,
+                "download_rate": 0,
+                "url": None,
+                "location": None,
+            }
+            for i in range(self.nft.urlcount)  # Generate thread results dict structure
+        ]
         assert self.nft._get_fast_result() == mock_error_result

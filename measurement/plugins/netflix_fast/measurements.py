@@ -83,22 +83,25 @@ class NetflixFastMeasurement(BaseMeasurement):
         self.sessions = []
         self.client_data = {"asn": None, "ip": None, "isp": None, "location": None}
         self.targets = []
-        self.thread_results = [
-            {
-                "index": i,
-                "elapsed_time": None,
-                "download_size": 0,
-                "download_rate": 0,
-                "url": None,
-                "location": None,
-            }
-            for i in range(self.urlcount)  # Generate thread results dict structure
-        ]
+        self.thread_results = []
         self.completed_total = 0
         self.completed_elapsed_time = None
 
     def measure(self):
         results = []
+        # Generate thread results dict structure
+        for i in range(self.urlcount):
+            self.thread_results.append(
+                {
+                    "index": i,
+                    "elapsed_time": None,
+                    "download_size": 0,
+                    "download_rate": 0,
+                    "url": None,
+                    "location": None,
+                }
+            )
+
         results.append(self._get_fast_result())
         for thread_result in self.thread_results:
             results.append(self._get_url_result(thread_result))
