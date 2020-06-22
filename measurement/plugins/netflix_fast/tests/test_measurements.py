@@ -219,7 +219,10 @@ class NetflixResultTestCase(TestCase):
     def test_thread_adding_stabilised(self, mock_is_stabilised):
         mock_is_stabilised.return_value = True
         nft = NetflixFastMeasurement(
-            "1", urlcount=5, terminate_on_thread_complete=False
+            "1",
+            urlcount=5,
+            terminate_on_thread_complete=False,
+            terminate_on_result_stable=True,
         )
         conns = []
         for i in range(1, 6):

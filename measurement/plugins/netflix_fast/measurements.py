@@ -67,7 +67,7 @@ class NetflixFastMeasurement(BaseMeasurement):
         sleep_seconds=0.2,
         chunk_size=64 * 2 ** 10,
         terminate_on_thread_complete=True,
-        terminate_on_result_stable=True,
+        terminate_on_result_stable=False,
     ):
         super(NetflixFastMeasurement, self).__init__(id=id)
         self.id = id
