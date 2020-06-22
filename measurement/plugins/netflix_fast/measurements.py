@@ -184,7 +184,9 @@ class NetflixFastMeasurement(BaseMeasurement):
         recent_measurements = deque(
             maxlen=MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE
         )
-        percent_deltas = deque(maxlen=MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE)
+        recent_percent_deltas = deque(
+            maxlen=MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE
+        )
         while True:
             elapsed_time = time.time() - start_time
             total = 0
@@ -198,12 +200,15 @@ class NetflixFastMeasurement(BaseMeasurement):
                 == MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE
             ):
                 # Calculate percentage difference to the average of the last ten measurements
-                percent_deltas.append(
+                # Note that there is no outlier detection here, all measurements are treated as-is.
+                recent_percent_deltas.append(
                     (speed_bits - mean(recent_measurements)) / speed_bits * 100
                 )
 
-            if self._is_test_complete(elapsed_time, percent_deltas):
-                reason_terminated = self._is_test_complete(elapsed_time, percent_deltas)
+            if self._is_test_complete(elapsed_time, recent_percent_deltas):
+                reason_terminated = self._is_test_complete(
+                    elapsed_time, recent_percent_deltas
+                )
                 self.exit_threads = True
                 for thread in threads:
                     thread.join()
@@ -262,11 +267,12 @@ class NetflixFastMeasurement(BaseMeasurement):
         self.client_data = api_json["client"]
         return
 
-    def _is_stabilised(self, percent_deltas, elapsed_time):
+    def _is_stabilised(self, recent_percent_deltas, elapsed_time):
         return (
             elapsed_time > MIN_TIME_SECONDS
-            and len(percent_deltas) >= MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE
-            and max(percent_deltas) < STABLE_MEASUREMENTS_DELTA
+            and len(recent_percent_deltas)
+            >= MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE
+            and max(recent_percent_deltas) < STABLE_MEASUREMENTS_DELTA
         )
 
     def _get_response(self, s):
@@ -278,11 +284,11 @@ class NetflixFastMeasurement(BaseMeasurement):
         conn = s.get(url, stream=True)
         return conn
 
-    def _is_test_complete(self, elapsed_time, percent_deltas):
+    def _is_test_complete(self, elapsed_time, recent_percent_deltas):
         if elapsed_time > self.max_time_seconds:
             return "time_expired"
         if (self.terminate_on_result_stable) & (
-            self._is_stabilised(percent_deltas, elapsed_time)
+            self._is_stabilised(recent_percent_deltas, elapsed_time)
         ):
             return "result_stabilised"
         if self.finished_threads == len(self.thread_results):
