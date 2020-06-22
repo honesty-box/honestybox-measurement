@@ -8,10 +8,9 @@ from itertools import cycle
 from measurement.plugins.netflix_fast.measurements import (
     NetflixFastTestMeasurement,
     NETFLIX_ERRORS,
-    CHUNK_SIZE,
-    MIN_TIME,
+    MIN_TIME_SECONDS,
     PING_COUNT,
-    STABLE_MEASUREMENTS_LENGTH,
+    MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE,
     STABLE_MEASUREMENTS_DELTA,
 )
 from measurement.plugins.netflix_fast.results import (
@@ -24,7 +23,7 @@ from measurement.units import RatioUnit, TimeUnit, StorageUnit, NetworkUnit
 
 
 """
-Note that calling .measure() and ._get_fast_result() mutate the NetflixFastTestMeasurement object. 
+Note that calling .measure() and ._get_fast_result() mutate the NetflixFastTestMeasurement object.
 As a result these objects should preferably be created inside the test function if these functions are to be called.
 """
 
@@ -70,14 +69,14 @@ class NetflixResultTestCase(TestCase):
             ],
         }
         self.fast_data_three = {
-            "speed_mbps": 1234,
+            "speed_bytes": 1234,
             "total": 4321,
             "reason_terminated": "fake_reason",
         }
         self.fast_result_three = NetflixFastMeasurementResult(
             id="1",
-            download_rate=float(self.fast_data_three["speed_mbps"]),
-            download_rate_unit=NetworkUnit("Mbit/s"),
+            download_rate=float(self.fast_data_three["speed_bytes"]),
+            download_rate_unit=NetworkUnit("Byte/s"),
             download_size=float(self.fast_data_three["total"]),
             download_size_unit=StorageUnit("B"),
             asn=self.api_response_three["client"]["asn"],
@@ -98,7 +97,7 @@ class NetflixResultTestCase(TestCase):
                 download_size=0,
                 download_size_unit=StorageUnit("B"),
                 download_rate=0,
-                download_rate_unit=NetworkUnit("Mbit/s"),
+                download_rate_unit=NetworkUnit("Byte/s"),
                 minimum_latency=0,
                 average_latency=0,
                 maximum_latency=0,
@@ -257,33 +256,33 @@ class HelperFunctionTestCase(TestCase):
         assert len(nft.sessions) == 3
 
     def test_is_stabilised_is_stable(self):
-        mock_elapsed_time = MIN_TIME + 1
+        mock_elapsed_time = MIN_TIME_SECONDS + 1
         mock_percent_deltas = [
             STABLE_MEASUREMENTS_DELTA - sys.float_info.epsilon
-        ] * STABLE_MEASUREMENTS_LENGTH
-        assert self.nft._is_stabilised(mock_percent_deltas, mock_elapsed_time) == True
+        ] * MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE
+        assert self.nft._is_stabilised(mock_percent_deltas, mock_elapsed_time) is True
 
     def test_is_stabilised_not_stable(self):
-        mock_elapsed_time = MIN_TIME + 1
+        mock_elapsed_time = MIN_TIME_SECONDS + 1
         mock_percent_deltas = [STABLE_MEASUREMENTS_DELTA - sys.float_info.epsilon] * (
-            STABLE_MEASUREMENTS_LENGTH - 1
+            MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE - 1
         )
         mock_percent_deltas.append(STABLE_MEASUREMENTS_DELTA + sys.float_info.epsilon)
-        assert self.nft._is_stabilised(mock_percent_deltas, mock_elapsed_time) == False
+        assert self.nft._is_stabilised(mock_percent_deltas, mock_elapsed_time) is False
 
     def test_is_stabilised_too_short(self):
-        mock_elapsed_time = MIN_TIME + 1
+        mock_elapsed_time = MIN_TIME_SECONDS + 1
         mock_percent_deltas = [STABLE_MEASUREMENTS_DELTA - sys.float_info.epsilon] * (
-            STABLE_MEASUREMENTS_LENGTH - 1
+            MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE - 1
         )
-        assert self.nft._is_stabilised(mock_percent_deltas, mock_elapsed_time) == False
+        assert self.nft._is_stabilised(mock_percent_deltas, mock_elapsed_time) is False
 
     def test_is_stabilised_too_early(self):
-        mock_elapsed_time = MIN_TIME - 1
+        mock_elapsed_time = MIN_TIME_SECONDS - 1
         mock_percent_deltas = [
             STABLE_MEASUREMENTS_DELTA - sys.float_info.epsilon
-        ] * STABLE_MEASUREMENTS_LENGTH
-        assert self.nft._is_stabilised(mock_percent_deltas, mock_elapsed_time) == False
+        ] * MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE
+        assert self.nft._is_stabilised(mock_percent_deltas, mock_elapsed_time) is False
 
 
 class ErrorsTestCase(TestCase):

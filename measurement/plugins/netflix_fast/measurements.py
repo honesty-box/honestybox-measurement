@@ -1,13 +1,13 @@
 """
 Using the netflix_fast v2 api, the test collects some details about the client, and launches 1 thread per provided URL to download. Every `sleep_seconds` (presently 0.2) the test will append the latest speed (calculated by total downloaded bytes/total time taken) before checking for, in order:
-    - `max_time` (presently 30s) expired.
+    - `max_time_seconds` (presently 30s) expired.
     - Results have become "stabilised"
     - All threads have finished downloading
     - A single thread has finished downloading, IF `terminate_on_thread_complete=True`
 
 Stabilisation is considered to be:
-    - Downloaded has been running longer than `MIN_TIME` (presently 3s)
-    - AND more than or equal to `STABLE_MEASUREMENTS_LENGTH` (presently 6) have been recorded
+    - Downloaded has been running longer than `MIN_TIME_SECONDS` (presently 3s)
+    - AND more than or equal to `MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE` (presently 6) have been recorded
     - AND maximum percentage delta in these measurements is `< STABLE_MEASUREMENTS_DELTA` presently (2%)
 
 In cases where the test concludes independently of the main loop (i.e when `reason_terminated == "thread_complete"`) The speed at the instant the thread completes is used, otherwise the final speed is used.
@@ -52,10 +52,9 @@ NETFLIX_ERRORS = {
     "netflix-connection": "Netflix test failed to connect to download URLs",
     "netflix-download": "Netflix test encountered an error downloading data",
 }
-CHUNK_SIZE = 64 * 2 ** 10
-MIN_TIME = 3
+MIN_TIME_SECONDS = 3
 PING_COUNT = 4
-STABLE_MEASUREMENTS_LENGTH = 6
+MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE = 6
 STABLE_MEASUREMENTS_DELTA = 2
 
 
@@ -64,16 +63,18 @@ class NetflixFastTestMeasurement(BaseMeasurement):
         self,
         id,
         urlcount=3,
-        max_time=30,
+        max_time_seconds=30,
         sleep_seconds=0.2,
+        chunk_size=64 * 2 ** 10,
         terminate_on_thread_complete=True,
         terminate_on_result_stable=True,
     ):
         super(NetflixFastTestMeasurement, self).__init__(id=id)
         self.id = id
         self.urlcount = urlcount
-        self.max_time = max_time
+        self.max_time_seconds = max_time_seconds
         self.sleep_seconds = sleep_seconds
+        self.chunk_size = chunk_size
         self.terminate_on_thread_complete = terminate_on_thread_complete
         self.terminate_on_result_stable = terminate_on_result_stable
         self.finished_threads = 0
@@ -91,7 +92,7 @@ class NetflixFastTestMeasurement(BaseMeasurement):
                 "url": None,
                 "location": None,
             }
-            for i in range(self.urlcount)
+            for i in range(self.urlcount)  # Generate thread results dict structure
         ]
         self.completed_total = 0
         self.completed_elapsed_time = None
@@ -149,8 +150,8 @@ class NetflixFastTestMeasurement(BaseMeasurement):
 
         return NetflixFastMeasurementResult(
             id=self.id,
-            download_rate=float(fast_data["speed_mbps"]),
-            download_rate_unit=NetworkUnit("Mbit/s"),
+            download_rate=float(fast_data["speed_bytes"]),
+            download_rate_unit=NetworkUnit("Byte/s"),
             download_size=float(fast_data["total"]),
             download_size_unit=StorageUnit("B"),
             asn=self.client_data["asn"],
@@ -174,21 +175,27 @@ class NetflixFastTestMeasurement(BaseMeasurement):
             threads[i].daemon = True
             threads[i].start()
 
+        # Record approximate time
         start_time = time.time()
-        recent_measurements = deque(maxlen=STABLE_MEASUREMENTS_LENGTH)
-        percent_deltas = deque(maxlen=STABLE_MEASUREMENTS_LENGTH)
+        recent_measurements = deque(
+            maxlen=MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE
+        )
+        percent_deltas = deque(maxlen=MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE)
         while True:
             elapsed_time = time.time() - start_time
             total = 0
             for thread_result in self.thread_results:
                 total += thread_result["download_size"]
-            speed_kBps = total / elapsed_time / 1024
-            recent_measurements.append(speed_kBps)
+            speed_bytes = total / elapsed_time
+            recent_measurements.append(speed_bytes)
 
-            if len(recent_measurements) == 10:
+            if (
+                len(recent_measurements)
+                == MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE
+            ):
                 # Calculate percentage difference to the average of the last ten measurements
                 percent_deltas.append(
-                    (speed_kBps - mean(recent_measurements)) / speed_kBps * 100
+                    (speed_bytes - mean(recent_measurements)) / speed_bytes * 100
                 )
 
             if self._is_test_complete(elapsed_time, percent_deltas):
@@ -201,19 +208,13 @@ class NetflixFastTestMeasurement(BaseMeasurement):
                     reason_terminated == "thread_complete"
                 ):
                     # Record the speed at the time the thread finished downloading
-                    speed_mbps = (
-                        self.completed_total
-                        / self.completed_elapsed_time
-                        / 1024
-                        / 1024
-                        * 8
-                    )
+                    speed_bytes = self.completed_total / self.completed_elapsed_time
                 else:
                     elapsed_time = time.time() - start_time
-                    speed_mbps = total / elapsed_time / 1024 / 1024 * 8
+                    speed_bytes = total / elapsed_time
 
                 return {
-                    "speed_mbps": speed_mbps,
+                    "speed_bytes": speed_bytes,
                     "total": total,
                     "reason_terminated": reason_terminated,
                 }
@@ -221,7 +222,7 @@ class NetflixFastTestMeasurement(BaseMeasurement):
 
     def _threaded_download(self, conn, thread_result, start_time):
         # Iterate through the URL content
-        g = conn.iter_content(chunk_size=CHUNK_SIZE)
+        g = conn.iter_content(chunk_size=self.chunk_size)
         for chunk in g:
             if self.exit_threads:
                 break
@@ -255,8 +256,8 @@ class NetflixFastTestMeasurement(BaseMeasurement):
 
     def _is_stabilised(self, percent_deltas, elapsed_time):
         return (
-            elapsed_time > MIN_TIME
-            and len(percent_deltas) >= STABLE_MEASUREMENTS_LENGTH
+            elapsed_time > MIN_TIME_SECONDS
+            and len(percent_deltas) >= MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE
             and max(percent_deltas) < STABLE_MEASUREMENTS_DELTA
         )
 
@@ -270,7 +271,7 @@ class NetflixFastTestMeasurement(BaseMeasurement):
         return conn
 
     def _is_test_complete(self, elapsed_time, percent_deltas):
-        if elapsed_time > self.max_time:
+        if elapsed_time > self.max_time_seconds:
             return "time_expired"
         if (self.terminate_on_result_stable) & (
             self._is_stabilised(percent_deltas, elapsed_time)
@@ -296,7 +297,7 @@ class NetflixFastTestMeasurement(BaseMeasurement):
             download_size=thread_result["download_size"],
             download_size_unit=StorageUnit("B"),
             download_rate=thread_result["download_rate"],
-            download_rate_unit=NetworkUnit("Mbit/s"),
+            download_rate_unit=NetworkUnit("Byte/s"),
             minimum_latency=LatencyResult.minimum_latency,
             average_latency=LatencyResult.average_latency,
             maximum_latency=LatencyResult.maximum_latency,

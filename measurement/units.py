@@ -9,6 +9,7 @@ class NetworkUnit(Enum):
     megabit_per_second = "Mbit/s"
     kibibit_per_second = "Kibit/s"
     mebibit_per_second = "Mibit/s"
+    byte_per_second = "Byte/s"
 
 
 class StorageUnit(Enum):
