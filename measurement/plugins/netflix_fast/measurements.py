@@ -58,7 +58,7 @@ MEASUREMENTS_COUNTED_BEFORE_CONSIDERED_STABLE = 6
 STABLE_MEASUREMENTS_DELTA = 2
 
 
-class NetflixFastTestMeasurement(BaseMeasurement):
+class NetflixFastMeasurement(BaseMeasurement):
     def __init__(
         self,
         id,
@@ -69,7 +69,7 @@ class NetflixFastTestMeasurement(BaseMeasurement):
         terminate_on_thread_complete=True,
         terminate_on_result_stable=True,
     ):
-        super(NetflixFastTestMeasurement, self).__init__(id=id)
+        super(NetflixFastMeasurement, self).__init__(id=id)
         self.id = id
         self.urlcount = urlcount
         self.max_time_seconds = max_time_seconds

@@ -6,7 +6,7 @@ from threading import active_count
 from itertools import cycle
 
 from measurement.plugins.netflix_fast.measurements import (
-    NetflixFastTestMeasurement,
+    NetflixFastMeasurement,
     NETFLIX_ERRORS,
     MIN_TIME_SECONDS,
     PING_COUNT,
@@ -23,7 +23,7 @@ from measurement.units import RatioUnit, TimeUnit, StorageUnit, NetworkUnit
 
 
 """
-Note that calling .measure() and ._get_fast_result() mutate the NetflixFastTestMeasurement object.
+Note that calling .measure() and ._get_fast_result() mutate the NetflixFastMeasurement object.
 As a result these objects should preferably be created inside the test function if these functions are to be called.
 """
 
@@ -31,7 +31,7 @@ As a result these objects should preferably be created inside the test function 
 class NetflixResultTestCase(TestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.nft = NetflixFastTestMeasurement(
+        self.nft = NetflixFastMeasurement(
             "1", urlcount=3, terminate_on_thread_complete=True
         )
         self.api_response_three = {
@@ -114,10 +114,10 @@ class NetflixResultTestCase(TestCase):
         ]
 
     @mock.patch(
-        "measurement.plugins.netflix_fast.measurements.NetflixFastTestMeasurement._get_fast_result"
+        "measurement.plugins.netflix_fast.measurements.NetflixFastMeasurement._get_fast_result"
     )
     @mock.patch(
-        "measurement.plugins.netflix_fast.measurements.NetflixFastTestMeasurement._get_url_result"
+        "measurement.plugins.netflix_fast.measurements.NetflixFastMeasurement._get_url_result"
     )
     def test_measure(self, mock_get_url_result, mock_get_fast_result):
         mock_get_url_result.side_effect = self.thread_result_three_list
@@ -130,10 +130,10 @@ class NetflixResultTestCase(TestCase):
         ]
 
     @mock.patch(
-        "measurement.plugins.netflix_fast.measurements.NetflixFastTestMeasurement._manage_threads"
+        "measurement.plugins.netflix_fast.measurements.NetflixFastMeasurement._manage_threads"
     )
     @mock.patch(
-        "measurement.plugins.netflix_fast.measurements.NetflixFastTestMeasurement._get_connection"
+        "measurement.plugins.netflix_fast.measurements.NetflixFastMeasurement._get_connection"
     )
     @mock.patch("requests.Session")
     def test_fast_result(
@@ -155,13 +155,13 @@ class NetflixResultTestCase(TestCase):
         assert self.nft._get_fast_result() == self.fast_result_three
 
     @mock.patch(
-        "measurement.plugins.netflix_fast.measurements.NetflixFastTestMeasurement._manage_threads"
+        "measurement.plugins.netflix_fast.measurements.NetflixFastMeasurement._manage_threads"
     )
     @mock.patch(
-        "measurement.plugins.netflix_fast.measurements.NetflixFastTestMeasurement._get_connection"
+        "measurement.plugins.netflix_fast.measurements.NetflixFastMeasurement._get_connection"
     )
     @mock.patch(
-        "measurement.plugins.netflix_fast.measurements.NetflixFastTestMeasurement._query_api"
+        "measurement.plugins.netflix_fast.measurements.NetflixFastMeasurement._query_api"
     )
     @mock.patch("requests.Session")
     def test_fast_result_client_data(
@@ -170,7 +170,7 @@ class NetflixResultTestCase(TestCase):
         assert True
 
     # def test_thread_adding_terminating(self):
-    #     nft = NetflixFastTestMeasurement("1", urlcount=5, terminate_on_thread_complete=True)
+    #     nft = NetflixFastMeasurement("1", urlcount=5, terminate_on_thread_complete=True)
     #     conns = []
     #     for i in range(1,10):
     #         m = mock.MagicMock()
@@ -180,7 +180,7 @@ class NetflixResultTestCase(TestCase):
     #     assert ((x["reason_terminated"] == "thread_complete"))
 
     def test_thread_adding_all_complete(self):
-        nft = NetflixFastTestMeasurement(
+        nft = NetflixFastMeasurement(
             "1", urlcount=5, terminate_on_thread_complete=False
         )
         conns = []
@@ -192,11 +192,11 @@ class NetflixResultTestCase(TestCase):
         assert (x["reason_terminated"] == "all_complete") & (x["total"] == 75)
 
     @mock.patch(
-        "measurement.plugins.netflix_fast.measurements.NetflixFastTestMeasurement._is_stabilised"
+        "measurement.plugins.netflix_fast.measurements.NetflixFastMeasurement._is_stabilised"
     )
     def test_thread_adding_stabilised(self, mock_is_stabilised):
         mock_is_stabilised.return_value = True
-        nft = NetflixFastTestMeasurement(
+        nft = NetflixFastMeasurement(
             "1", urlcount=5, terminate_on_thread_complete=False
         )
         conns = []
@@ -240,14 +240,14 @@ class NetflixResultTestCase(TestCase):
 class HelperFunctionTestCase(TestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.nft = NetflixFastTestMeasurement("1")
+        self.nft = NetflixFastMeasurement("1")
 
     @mock.patch("requests.Session")
     def test_get_connection(self, mock_get_session):
         mock_session = mock.MagicMock()
         mock_session.get.side_effect = ["first_url", "second_url", "third_url"]
         mock_get_session.return_value = mock_session
-        nft = NetflixFastTestMeasurement("1")
+        nft = NetflixFastMeasurement("1")
         assert [
             nft._get_connection("first"),
             nft._get_connection("second"),
@@ -288,7 +288,7 @@ class HelperFunctionTestCase(TestCase):
 class ErrorsTestCase(TestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.nft = NetflixFastTestMeasurement("1")
+        self.nft = NetflixFastMeasurement("1")
 
     @mock.patch("requests.Session")
     def test_netflix_response_err(self, mock_get_session):
