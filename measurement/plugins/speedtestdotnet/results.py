@@ -9,5 +9,5 @@ else:
     SpeedtestdotnetMeasurementResult = collections.namedtuple(
         "SpeedtestdotnetMeasurementResult",
         "id errors download_rate download_rate_unit upload_rate upload_rate_unit "
-        "latency server_name server_id server_sponsor server_host",
+        "bytes_received latency server_name server_id server_sponsor server_host",
     )

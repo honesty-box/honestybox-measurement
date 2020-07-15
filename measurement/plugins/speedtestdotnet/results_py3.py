@@ -28,6 +28,7 @@ class SpeedtestdotnetMeasurementResult(MeasurementResult):
     download_rate_unit: typing.Optional[NetworkUnit]
     upload_rate: typing.Optional[float]
     upload_rate_unit: typing.Optional[NetworkUnit]
+    bytes_received: typing.Optional[float]
     latency: typing.Optional[float]
     server_name: typing.Optional[str]
     server_id: typing.Optional[str]

@@ -58,6 +58,7 @@ class SpeedtestdotnetMeasurement(BaseMeasurement):
                 download_rate_unit=NetworkUnit("bit/s"),
                 upload_rate=float(results_dict["upload"]),
                 upload_rate_unit=NetworkUnit("bit/s"),
+                bytes_received=(results_dict["bytes_received"]),
                 latency=float(results_dict["ping"]),
                 server_name=results_dict["server"]["name"],
                 server_id=results_dict["server"]["id"],
