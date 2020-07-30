@@ -27,8 +27,7 @@ class YouTubeMeasurement(BaseMeasurement):
         self.progress_dicts = []
 
     def measure(self):
-        self._get_youtube_result(self.url)
-        print("Progress dicts: ", self.progress_dicts)
+        return self._get_youtube_result(self.url)
 
     def _get_youtube_result(self, url):
         params = {
@@ -48,17 +47,17 @@ class YouTubeMeasurement(BaseMeasurement):
             return self._get_youtube_error("youtube-url", traceback=str(e))
 
         # Extract size and duration from final progress step
-        download_size = self.progress_dicts[-1]["download_bytes"]
+        download_size = self.progress_dicts[-1]["total_bytes"]
         elapsed_time = self.progress_dicts[-1]["elapsed"]
 
         # Speed is only reported in non-final steps
-        download_rate = self.progress_dicts[-2]["speed"]
+        download_rate = self.progress_dicts[-2]["speed"] * 8
 
         return YouTubeMeasurementResult(
             id=self.id,
             url=self.url,
             download_rate=download_rate,
-            download_rate_unit=NetworkUnit("Bytes/s"),
+            download_rate_unit=NetworkUnit("bit/s"),
             download_size=download_size,
             download_size_unit=StorageUnit("B"),
             elapsed_time=elapsed_time,
