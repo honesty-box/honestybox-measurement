@@ -49,7 +49,10 @@ class LatencyMeasurement(BaseMeasurement):
             )
 
         validated_domain = validators.domain(host)
-        if isinstance(validated_domain, ValidationFailure):
+        validated_ip = validators.ipv4(host)
+        if isinstance(validated_domain, ValidationFailure) & isinstance(
+            validated_ip, ValidationFailure
+        ):
             raise ValueError("`{host}` is not a valid host".format(host=host))
 
         self.host = host

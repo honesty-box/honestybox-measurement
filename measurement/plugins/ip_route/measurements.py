@@ -37,8 +37,11 @@ class IPRouteMeasurement(BaseMeasurement):
         if len(hosts) < 1:
             raise ValueError("At least one host must be provided.")
         for host in hosts:
-            validated_url = validators.domain(host)
-            if isinstance(validated_url, ValidationFailure):
+            validated_domain = validators.domain(host)
+            validated_ip = validators.ipv4(host)
+            if isinstance(validated_domain, ValidationFailure) & isinstance(
+                validated_ip, ValidationFailure
+            ):
                 raise ValueError("`{host}` is not a valid host".format(host=host))
 
         if count < 0:

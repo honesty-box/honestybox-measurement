@@ -332,3 +332,6 @@ class IPRouteMeasurementCreationTestCase(TestCase):
         self.assertRaises(
             ValueError, IPRouteMeasurement, "test", ["validfakeurl.com"], count=-2,
         )
+
+    def test_valid_ip_host(self):
+        IPRouteMeasurement("test", ["1.1.1.1"])

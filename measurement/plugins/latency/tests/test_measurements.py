@@ -232,3 +232,6 @@ class LatencyMeasurementInitTestCase(TestCase):
     def test_invalid_host_gets_raised(self):
         with self.assertRaises(ValueError):
             LatencyMeasurement("test", "%test")
+
+    def test_valid_ip_host(self):
+        LatencyMeasurement("test", "1.1.1.1")
