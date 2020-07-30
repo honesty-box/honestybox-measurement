@@ -1,8 +1,6 @@
 import socket
 from unittest import TestCase, mock
 
-from scapy.all import traceroute
-
 from measurement.plugins.ip_route.measurements import (
     IPRouteMeasurement,
     ROUTE_ERRORS,

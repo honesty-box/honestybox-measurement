@@ -13,7 +13,10 @@ import socket
 import validators
 from validators import ValidationFailure
 
+# Both of these imports seem to be required in order to mock the traceroute function
 import scapy
+from scapy.layers.inet import traceroute
+
 
 from measurement.measurements import BaseMeasurement
 from measurement.results import Error
@@ -32,7 +35,7 @@ class IPRouteMeasurement(BaseMeasurement):
         super(IPRouteMeasurement, self).__init__(id=id)
 
         if len(hosts) < 1:
-            raise ValueError("At least one url must be provided.")
+            raise ValueError("At least one host must be provided.")
         for host in hosts:
             validated_url = validators.domain(host)
             if isinstance(validated_url, ValidationFailure):
@@ -59,7 +62,6 @@ class IPRouteMeasurement(BaseMeasurement):
             )
             results.append(latency_measurement.measure()[0])
         results.extend([res for _, res in initial_latency_results])
-        print(results)
         return results
 
     def _find_least_latent_host(self, hosts):
@@ -69,10 +71,8 @@ class IPRouteMeasurement(BaseMeasurement):
         """
         initial_latency_results = []
         for host in hosts:
-            print("host: ", host)
             latency_measurement = LatencyMeasurement(self.id, host, count=2)
             initial_latency_results.append((host, latency_measurement.measure()[0]))
-        print("initial latency results: ", initial_latency_results)
         return sorted(
             initial_latency_results,
             key=lambda x: (x[1].average_latency is None, x[1].average_latency),
