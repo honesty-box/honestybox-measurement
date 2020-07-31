@@ -83,7 +83,11 @@ class IPRouteMeasurement(BaseMeasurement):
 
     def _get_traceroute_result(self, host):
         try:
-            traceroute_out = scapy.layers.inet.traceroute(host)
+            # Test whether raw socket privileges exist:
+            socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
+
+            # Commence traceroute test:
+            traceroute_out = scapy.layers.inet.traceroute(host, verbose=0)
             traceroute_trace = traceroute_out[0].get_trace()
             ip = list(traceroute_trace.keys())[0]
             hop_count = len(traceroute_trace[ip])

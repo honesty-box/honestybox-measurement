@@ -150,9 +150,10 @@ class IPRouteTestCase(TestCase):
             ),
         )
 
+    @mock.patch.object(socket, "socket")
     @mock.patch.object(LatencyMeasurement, "measure")
     @mock.patch("scapy.layers.inet.traceroute")
-    def test_measure(self, mock_get_traceroute, mock_latency_results):
+    def test_measure(self, mock_get_traceroute, mock_latency_results, mock_socket):
         iprm_three = IPRouteMeasurement(
             self.id, hosts=self.example_hosts_three, count=4
         )
@@ -176,8 +177,9 @@ class IPRouteTestCase(TestCase):
             ],
         )
 
+    @mock.patch.object(socket, "socket")
     @mock.patch("scapy.layers.inet.traceroute")
-    def test_get_trace_five(self, mock_get_traceroute):
+    def test_get_trace_five(self, mock_get_traceroute, mock_socket):
         mock_trace = mock.MagicMock()
         mock_trace.get_trace.return_value = self.example_trace_five
         mock_get_traceroute.return_value = [mock_trace, None]
@@ -186,8 +188,9 @@ class IPRouteTestCase(TestCase):
             self.example_result_five,
         )
 
+    @mock.patch.object(socket, "socket")
     @mock.patch("scapy.layers.inet.traceroute")
-    def test_get_trace_permission_err(self, mock_get_traceroute):
+    def test_get_trace_permission_err(self, mock_get_traceroute, mock_socket):
         mock_get_traceroute.side_effect = PermissionError(
             "[Errno 1] Operation not permitted"
         )
@@ -196,8 +199,9 @@ class IPRouteTestCase(TestCase):
             self.example_result_permission_err,
         )
 
+    @mock.patch.object(socket, "socket")
     @mock.patch("scapy.layers.inet.traceroute")
-    def test_get_trace_address_err(self, mock_get_traceroute):
+    def test_get_trace_address_err(self, mock_get_traceroute, mock_socket):
         mock_get_traceroute.side_effect = socket.gaierror(
             "[Errno -2] Name or service not known"
         )
