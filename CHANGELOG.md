@@ -1,4 +1,7 @@
 ## Unreleased
+### Added
+* [495](https://trello.com/c/dB5AYnxj/495-add-traceroute-to-honestybox-measurement) Add IP route measurement
+* Allow IPs as hosts for LatencyMeasurement
 
 ## [1.0.6] (2020-06-23)
 ### Added
