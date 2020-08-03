@@ -1,5 +1,8 @@
 import socket
 import urllib
+import time
+import tempfile
+import os
 
 import youtube_dl
 import validators
@@ -30,10 +33,15 @@ class YouTubeMeasurement(BaseMeasurement):
         return self._get_youtube_result(self.url)
 
     def _get_youtube_result(self, url):
+        filename = "{}/{}/{}_%(title)s.%(ext)s".format(
+            tempfile.gettempdir(), os.getpid(), int(time.time())
+        )
+        print("Filename: ", filename)
         params = {
             "verbose": True,
             "quiet": True,
             "progress_hooks": [self._store_progress_dicts_hook],
+            "outtmpl": filename,
         }
         ydl = youtube_dl.YoutubeDL(params=params)
         try:
