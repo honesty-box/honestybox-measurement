@@ -16,6 +16,8 @@ from measurement.plugins.youtube.results import YouTubeMeasurementResult
 YOUTUBE_ERRORS = {
     "youtube-download": "Download utility could not download file",
     "youtube-url": "Could not recognise URL",
+    "youtube-attribute": "Could not parse attributes from progress dict",
+    "youtube-file": "Could not remove file/directory!!",
 }
 
 
@@ -33,10 +35,11 @@ class YouTubeMeasurement(BaseMeasurement):
         return self._get_youtube_result(self.url)
 
     def _get_youtube_result(self, url):
-        filename = "{}/{}/{}_%(title)s.%(ext)s".format(
+        # Unique filename from process ID and timestamp
+        file_dir = "{}/youtube-dl_{}".format(tempfile.gettempdir(), os.getpid())
+        filename = "{}/youtube-dl_{}/{}_%(title)s.%(ext)s".format(
             tempfile.gettempdir(), os.getpid(), int(time.time())
         )
-        print("Filename: ", filename)
         params = {
             "verbose": True,
             "quiet": True,
@@ -53,13 +56,25 @@ class YouTubeMeasurement(BaseMeasurement):
             self._check_error_string(youtube_out)
         except urllib.error.URLError as e:
             return self._get_youtube_error("youtube-url", traceback=str(e))
+        try:
+            # Extract size and duration from final progress step
+            download_size = self.progress_dicts[-1]["total_bytes"]
+            elapsed_time = self.progress_dicts[-1]["elapsed"]
 
-        # Extract size and duration from final progress step
-        download_size = self.progress_dicts[-1]["total_bytes"]
-        elapsed_time = self.progress_dicts[-1]["elapsed"]
+            # Speed is only reported in non-final steps
+            download_rate = self.progress_dicts[-2]["speed"] * 8
 
-        # Speed is only reported in non-final steps
-        download_rate = self.progress_dicts[-2]["speed"] * 8
+            # Check file location (with video attributes)
+            result_filename = self.progress_dicts[-1]["filename"]
+        except AttributeError as e:
+            return self._get_youtube_error("youtube-attribute", traceback=str(e))
+
+        try:
+            # Remove downloaded file
+            os.remove(result_filename)
+            os.rmdir(file_dir)
+        except FileNotFoundError as e:
+            return self._get_youtube_error("youtube-file", traceback=str(e))
 
         return YouTubeMeasurementResult(
             id=self.id,
