@@ -1,5 +1,6 @@
 ## Unreleased
 ### Added
+* [508](https://trello.com/c/LohvvmPO/508-add-youtube-to-honestybox-measurement) Add youtube measurement
 * [495](https://trello.com/c/dB5AYnxj/495-add-traceroute-to-honestybox-measurement) Add IP route measurement
 * Allow IPs as hosts for LatencyMeasurement
 
