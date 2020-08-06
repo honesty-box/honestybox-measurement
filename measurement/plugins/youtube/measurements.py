@@ -15,14 +15,18 @@ from measurement.plugins.youtube.results import YouTubeMeasurementResult
 
 YOUTUBE_ERRORS = {
     "youtube-download": "Download utility could not download file",
+    "youtube-extractor": "Unable to extract info from youtube",
     "youtube-url": "Could not recognise URL",
     "youtube-attribute": "Could not parse attributes from progress dict",
-    "youtube-file": "Could not remove file/directory!!",
+    "youtube-progress_length": "Recorded progress dicts were too short",
+    "youtube-file": "Could not remove file!!",
+    "youtube-no_directory": "Could not find directory!!",
+    "youtube-directory_nonempty": "Could not remove directory, non-empty!",
 }
 
 
 class YouTubeMeasurement(BaseMeasurement):
-    def __init__(self, id, url, path):
+    def __init__(self, id, url):
         super(YouTubeMeasurement, self).__init__(id=id)
         validated_url = validators.url(url)
         if isinstance(validated_url, ValidationFailure):
@@ -41,21 +45,17 @@ class YouTubeMeasurement(BaseMeasurement):
             tempfile.gettempdir(), os.getpid(), int(time.time())
         )
         params = {
-            "verbose": True,
             "quiet": True,
             "progress_hooks": [self._store_progress_dicts_hook],
             "outtmpl": filename,
         }
         ydl = youtube_dl.YoutubeDL(params=params)
         try:
-            youtube_out = ydl.extract_info(url)
+            ydl.extract_info(url)
+        except youtube_dl.utils.ExtractorError as e:
+            return self._get_youtube_error("youtube-extractor", traceback=str(e))
         except youtube_dl.utils.DownloadError as e:
             return self._get_youtube_error("youtube-download", traceback=str(e))
-
-        try:
-            self._check_error_string(youtube_out)
-        except urllib.error.URLError as e:
-            return self._get_youtube_error("youtube-url", traceback=str(e))
         try:
             # Extract size and duration from final progress step
             download_size = self.progress_dicts[-1]["total_bytes"]
@@ -66,15 +66,29 @@ class YouTubeMeasurement(BaseMeasurement):
 
             # Check file location (with video attributes)
             result_filename = self.progress_dicts[-1]["filename"]
-        except AttributeError as e:
-            return self._get_youtube_error("youtube-attribute", traceback=str(e))
+        except KeyError:
+            return self._get_youtube_error(
+                "youtube-attribute", traceback=str(self.progress_dicts)
+            )
+        except IndexError:
+            return self._get_youtube_error(
+                "youtube-progress_length", traceback=str(self.progress_dicts)
+            )
 
         try:
             # Remove downloaded file
             os.remove(result_filename)
-            os.rmdir(file_dir)
         except FileNotFoundError as e:
             return self._get_youtube_error("youtube-file", traceback=str(e))
+        try:
+            # Remove the created temp directory
+            os.rmdir(file_dir)
+        except FileNotFoundError as e:
+            return self._get_youtube_error("youtube-no_directory", traceback=str(e))
+        except OSError as e:
+            return self._get_youtube_error(
+                "youtube-directory_nonempty", traceback=str(e)
+            )
 
         return YouTubeMeasurementResult(
             id=self.id,
@@ -87,9 +101,6 @@ class YouTubeMeasurement(BaseMeasurement):
             elapsed_time_unit=TimeUnit("s"),
             errors=[],
         )
-
-    def _check_error_string(self, youtube_out):
-        print("Output: \n", youtube_out, "\n")
 
     def _store_progress_dicts_hook(self, s):
         """
