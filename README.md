@@ -58,13 +58,13 @@ To ensure releases are always built on the latest codebase, *changes are only ev
 
     ```shell script
     $ git add CHANGELOG.md pyproject.toml
-    $ git commit -m 'Release x.y.z`
+    $ git commit -m 'Release v<x>.<y>.<z>`
     ```
 
 7. Tag the commit with the release number:
 
     ```shell script
-    $ git tag x.y.z
+    $ git tag v<x>.<y>.<z>
     ```
 
 8. Push the commit and tags upstream:
@@ -89,7 +89,7 @@ To ensure releases are always built on the latest codebase, *changes are only ev
 2. Checkout the release:
 
     ```shell script
-    $ git checkout x.y.z
+    $ git checkout v<x>.<y>.<z>
     ```
 
 3. Publish the release:
