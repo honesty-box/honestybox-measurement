@@ -1,15 +1,28 @@
 name: Publish
+
 on:
   push:
     tags:
       - 'v[0-9]+\.[0-9]+\.[0-9]+'
+
 jobs:
-  build:
+  check-branch:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/release'
     steps:
     - uses: actions/checkout@v2
-    - name: Publish to PyPI
+      with:
+        ref: release
+    - name: Get release HEAD tag
+      run: echo "::set-env name=RELEASE_HEAD_TAG::$(git tag --points-at HEAD)"
+    - name: Stop if not release HEAD
+      run: exit 1
+      if: endsWith(github.ref, env.RELEASE_HEAD_TAG) != true
+  publish:
+    runs-on: ubuntu-latest
+    needs: check-branch
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build and publish to pypi
       uses: JRubics/poetry-publish@v1
       with:
         pypi_token: ${{ secrets.PYPI_TOKEN }}
