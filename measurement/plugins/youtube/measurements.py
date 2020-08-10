@@ -41,7 +41,7 @@ class YouTubeMeasurement(BaseMeasurement):
     def _get_youtube_result(self, url):
         # Unique filename from process ID and timestamp
         file_dir = "{}/youtube-dl_{}".format(tempfile.gettempdir(), os.getpid())
-        filename = "{}/youtube-dl_{}/{}_%(title)s.%(ext)s".format(
+        filename = "{}/youtube-dl_{}/{}.%(ext)s".format(
             tempfile.gettempdir(), os.getpid(), int(time.time())
         )
         params = {
