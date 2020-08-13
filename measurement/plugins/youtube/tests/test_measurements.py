@@ -263,25 +263,30 @@ class YoutubeResultTestCase(TestCase):
             ],
         )
 
+    @mock.patch("shutil.rmtree")
     @mock.patch("os.remove")
     @mock.patch("os.rmdir")
     @mock.patch.object(youtube_dl, "YoutubeDL")
-    def test_youtube_result_valid(self, mock_YoutubeDL, mock_rmdir, mock_remove):
+    def test_youtube_result_valid(
+        self, mock_YoutubeDL, mock_rmdir, mock_remove, mock_rmtree
+    ):
         self.ytm.progress_dicts = self.mock_progress_dicts
         mock_ydl = mock.MagicMock()
         mock_ydl.extract_info.return_value = None
         mock_YoutubeDL.return_value = mock_ydl
         mock_rmdir.side_effect = [0]
         mock_remove.side_effect = [0]
+        mock_rmtree.side_effect = [0]
         self.assertEqual(
             self.ytm._get_youtube_result(self.test_url), self.mock_valid_youtube_result
         )
 
+    @mock.patch("shutil.rmtree")
     @mock.patch("os.remove")
     @mock.patch("os.rmdir")
     @mock.patch.object(youtube_dl, "YoutubeDL")
     def test_youtube_result_extraction_error(
-        self, mock_YoutubeDL, mock_rmdir, mock_remove
+        self, mock_YoutubeDL, mock_rmdir, mock_remove, mock_rmtree
     ):
         self.ytm.progress_dicts = self.mock_progress_dicts
         mock_ydl = mock.MagicMock()
@@ -291,16 +296,19 @@ class YoutubeResultTestCase(TestCase):
         mock_YoutubeDL.return_value = mock_ydl
         mock_rmdir.side_effect = [0]
         mock_remove.side_effect = [0]
+        mock_rmtree.side_effect = [0]
+
         self.assertEqual(
             self.ytm._get_youtube_result(self.test_url),
             self.mock_extraction_fail_result,
         )
 
+    @mock.patch("shutil.rmtree")
     @mock.patch("os.remove")
     @mock.patch("os.rmdir")
     @mock.patch.object(youtube_dl, "YoutubeDL")
     def test_youtube_result_download_error(
-        self, mock_YoutubeDL, mock_rmdir, mock_remove
+        self, mock_YoutubeDL, mock_rmdir, mock_remove, mock_rmtree
     ):
         self.ytm.progress_dicts = self.mock_progress_dicts
         mock_ydl = mock.MagicMock()
@@ -310,15 +318,17 @@ class YoutubeResultTestCase(TestCase):
         mock_YoutubeDL.return_value = mock_ydl
         mock_rmdir.side_effect = [0]
         mock_remove.side_effect = [0]
+        mock_rmtree.side_effect = [0]
         self.assertEqual(
             self.ytm._get_youtube_result(self.test_url), self.mock_download_fail_result
         )
 
+    @mock.patch("shutil.rmtree")
     @mock.patch("os.remove")
     @mock.patch("os.rmdir")
     @mock.patch.object(youtube_dl, "YoutubeDL")
     def test_youtube_result_attribute_error(
-        self, mock_YoutubeDL, mock_rmdir, mock_remove
+        self, mock_YoutubeDL, mock_rmdir, mock_remove, mock_rmtree
     ):
         self.ytm.progress_dicts = self.mock_progress_dicts_missing_attribute
         mock_ydl = mock.MagicMock()
@@ -326,16 +336,18 @@ class YoutubeResultTestCase(TestCase):
         mock_YoutubeDL.return_value = mock_ydl
         mock_rmdir.side_effect = [0]
         mock_remove.side_effect = [0]
+        mock_rmtree.side_effect = [0]
         self.assertEqual(
             self.ytm._get_youtube_result(self.test_url),
             self.mock_missing_attribute_result,
         )
 
+    @mock.patch("shutil.rmtree")
     @mock.patch("os.remove")
     @mock.patch("os.rmdir")
     @mock.patch.object(youtube_dl, "YoutubeDL")
     def test_youtube_result_only_final_progress(
-        self, mock_YoutubeDL, mock_rmdir, mock_remove
+        self, mock_YoutubeDL, mock_rmdir, mock_remove, mock_rmtree
     ):
         self.ytm.progress_dicts = self.mock_progress_dicts_only_final
         mock_ydl = mock.MagicMock()
@@ -343,60 +355,67 @@ class YoutubeResultTestCase(TestCase):
         mock_YoutubeDL.return_value = mock_ydl
         mock_rmdir.side_effect = [0]
         mock_remove.side_effect = [0]
+        mock_rmtree.side_effect = [0]
         self.assertEqual(
             self.ytm._get_youtube_result(self.test_url), self.mock_final_only_result
         )
 
-    @mock.patch("os.remove")
-    @mock.patch("os.rmdir")
-    @mock.patch.object(youtube_dl, "YoutubeDL")
-    def test_youtube_result_remove_file(self, mock_YoutubeDL, mock_rmdir, mock_remove):
-        self.ytm.progress_dicts = self.mock_progress_dicts
-        mock_ydl = mock.MagicMock()
-        mock_ydl.extract_info.side_effect = None
-        mock_YoutubeDL.return_value = mock_ydl
-        mock_rmdir.side_effect = [0]
-        mock_remove.side_effect = [
-            FileNotFoundError("[Errno 2] No such file or directory: 'example_file'")
-        ]
-        self.assertEqual(
-            self.ytm._get_youtube_result(self.test_url), self.mock_file_remove_result
-        )
+    # NOTE: OUTDATED
+    # @mock.patch("shutil.rmtree")
+    # @mock.patch("os.remove")
+    # @mock.patch("os.rmdir")
+    # @mock.patch.object(youtube_dl, "YoutubeDL")
+    # def test_youtube_result_remove_file(self, mock_YoutubeDL, mock_rmdir, mock_remove, mock_rmtree):
+    #     self.ytm.progress_dicts = self.mock_progress_dicts
+    #     mock_ydl = mock.MagicMock()
+    #     mock_ydl.extract_info.side_effect = None
+    #     mock_YoutubeDL.return_value = mock_ydl
+    #     mock_rmdir.side_effect = [0]
+    #     mock_remove.side_effect = [0]
+    #     mock_rmtree.side_effect = [
+    #         FileNotFoundError("[Errno 2] No such file or directory: 'example_file'")
+    #     ]
+    #     self.assertEqual(
+    #         self.ytm._get_youtube_result(self.test_url), self.mock_file_remove_result
+    #     )
 
+    @mock.patch("shutil.rmtree")
     @mock.patch("os.remove")
     @mock.patch("os.rmdir")
     @mock.patch.object(youtube_dl, "YoutubeDL")
     def test_youtube_result_remove_directory(
-        self, mock_YoutubeDL, mock_rmdir, mock_remove
+        self, mock_YoutubeDL, mock_rmdir, mock_remove, mock_rmtree
     ):
         self.ytm.progress_dicts = self.mock_progress_dicts
         mock_ydl = mock.MagicMock()
         mock_ydl.extract_info.side_effect = None
         mock_YoutubeDL.return_value = mock_ydl
-        mock_rmdir.side_effect = [
+        mock_rmtree.side_effect = [
             FileNotFoundError("[Errno 2] No such file or directory: 'example_dir'")
         ]
+        mock_rmdir.side_effect = [0]
         mock_remove.side_effect = [0]
         self.assertEqual(
             self.ytm._get_youtube_result(self.test_url),
             self.mock_directory_remove_result,
         )
 
-    @mock.patch("os.remove")
-    @mock.patch("os.rmdir")
-    @mock.patch.object(youtube_dl, "YoutubeDL")
-    def test_youtube_result_remove_directory_nonempty(
-        self, mock_YoutubeDL, mock_rmdir, mock_remove
-    ):
-        self.ytm.progress_dicts = self.mock_progress_dicts
-        mock_ydl = mock.MagicMock()
-        mock_ydl.extract_info.side_effect = None
-        mock_YoutubeDL.return_value = mock_ydl
-        mock_rmdir.side_effect = [
-            OSError("[Errno 39] Directory not empty: 'example_dir'")
-        ]
-        mock_remove.side_effect = [0]
-        self.assertEqual(
-            self.ytm._get_youtube_result(self.test_url),
-            self.mock_directory_remove_nonempty_result,
-        )
+    # NOTE: OUTDATED
+    # @mock.patch("os.remove")
+    # @mock.patch("os.rmdir")
+    # @mock.patch.object(youtube_dl, "YoutubeDL")
+    # def test_youtube_result_remove_directory_nonempty(
+    #     self, mock_YoutubeDL, mock_rmdir, mock_remove
+    # ):
+    #     self.ytm.progress_dicts = self.mock_progress_dicts
+    #     mock_ydl = mock.MagicMock()
+    #     mock_ydl.extract_info.side_effect = None
+    #     mock_YoutubeDL.return_value = mock_ydl
+    #     mock_rmdir.side_effect = [
+    #         OSError("[Errno 39] Directory not empty: 'example_dir'")
+    #     ]
+    #     mock_remove.side_effect = [0]
+    #     self.assertEqual(
+    #         self.ytm._get_youtube_result(self.test_url),
+    #         self.mock_directory_remove_nonempty_result,
+    #     )

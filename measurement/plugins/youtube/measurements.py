@@ -3,6 +3,7 @@ import urllib
 import time
 import tempfile
 import os
+import shutil
 
 import youtube_dl
 import validators
@@ -63,9 +64,6 @@ class YouTubeMeasurement(BaseMeasurement):
 
             # Speed is only reported in non-final steps
             download_rate = self.progress_dicts[-2]["speed"] * 8
-
-            # Check file location (with video attributes)
-            result_filename = self.progress_dicts[-1]["filename"]
         except KeyError:
             return self._get_youtube_error(
                 "youtube-attribute", traceback=str(self.progress_dicts)
@@ -76,19 +74,10 @@ class YouTubeMeasurement(BaseMeasurement):
             )
 
         try:
-            # Remove downloaded file
-            os.remove(result_filename)
-        except FileNotFoundError as e:
-            return self._get_youtube_error("youtube-file", traceback=str(e))
-        try:
-            # Remove the created temp directory
-            os.rmdir(file_dir)
+            # Remove the created temp directory and all contents
+            shutil.rmtree(file_dir)
         except FileNotFoundError as e:
             return self._get_youtube_error("youtube-no_directory", traceback=str(e))
-        except OSError as e:
-            return self._get_youtube_error(
-                "youtube-directory_nonempty", traceback=str(e)
-            )
 
         return YouTubeMeasurementResult(
             id=self.id,
