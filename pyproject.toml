@@ -24,6 +24,7 @@ six = "^1.12"
 speedtest-cli = "^2.1"
 requests = "^2.23.0"
 statistics = "^1.0.3"
+youtube_dl = "^2020.6.16"
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
 tox = "^3.13"
