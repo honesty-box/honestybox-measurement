@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "honestybox-measurement"
-version = "1.0.7"
+version = "1.0.8"
 description = "A framework for measuring things and producing structured results."
 authors = [
     "James Stewart <james@amorphitec.io>",
