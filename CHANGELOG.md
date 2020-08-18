@@ -1,4 +1,7 @@
 ## Unreleased
+### Fixed
+* Fix scapy defined as dev dependency
+
 ## [1.0.8] (2020-08-14)
 ### Added
 * [508](https://trello.com/c/LohvvmPO/508-add-youtube-to-honestybox-measurement) Add youtube measurement
