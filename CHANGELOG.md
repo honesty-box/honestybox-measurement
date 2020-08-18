@@ -1,4 +1,6 @@
 ## Unreleased
+
+## [1.0.8] (2020-08-18)
 ### Fixed
 * Fix scapy defined as dev dependency
 
