@@ -1,8 +1,10 @@
 ## Unreleased
+
+## [1.0.10] (2020-08-19)
 ### Fixed
 * Fix IP route measurement permissions
 
-## [1.0.8] (2020-08-18)
+## [1.0.9] (2020-08-18)
 ### Fixed
 * Fix scapy defined as dev dependency
 
