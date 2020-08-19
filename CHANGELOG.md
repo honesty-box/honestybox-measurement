@@ -1,4 +1,6 @@
 ## Unreleased
+### Fixed
+* Fix IP route measurement permissions
 
 ## [1.0.8] (2020-08-18)
 ### Fixed
