@@ -1,4 +1,6 @@
 ## Unreleased
+### Added
+* [460](https://trello.com/c/BXK9xFfa/46dd-bytesreceived-to-speedtestdotnet-measurement) Add data_received to speedtestdotnet measurement
 
 ## [1.0.10] (2020-08-19)
 ### Fixed
