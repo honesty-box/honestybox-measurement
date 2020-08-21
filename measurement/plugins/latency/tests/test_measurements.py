@@ -28,8 +28,8 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
             packets_received=4,
             packets_lost=0.0,
             packets_lost_unit=RatioUnit.percentage,
-            time=7.0,
-            time_unit=TimeUnit.millisecond,
+            elapsed_time=7.0,
+            elapsed_time_unit=TimeUnit.millisecond,
         )
         self.invalid_latency = LatencyMeasurementResult(
             id="test",
@@ -49,8 +49,8 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
             packets_received=None,
             packets_lost=None,
             packets_lost_unit=None,
-            time=None,
-            time_unit=None,
+            elapsed_time=None,
+            elapsed_time_unit=None,
         )
         self.invalid_regex = LatencyMeasurementResult(
             id="test",
@@ -70,8 +70,8 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
             packets_received=None,
             packets_lost=None,
             packets_lost_unit=None,
-            time=None,
-            time_unit=None,
+            elapsed_time=None,
+            elapsed_time_unit=None,
         )
 
     @mock.patch("subprocess.run")
@@ -111,8 +111,8 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
                     ip_address="216.58.199.36",
                     icmp_sequence="1",
                     time_to_live="55",
-                    time="7.07",
-                    time_unit=TimeUnit.millisecond,
+                    elapsed_time="7.07",
+                    elapsed_time_unit=TimeUnit.millisecond,
                 ),
                 LatencyIndividualMeasurementResult(
                     id="test",
@@ -124,8 +124,8 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
                     ip_address="216.58.199.36",
                     icmp_sequence="2",
                     time_to_live="55",
-                    time="6.68",
-                    time_unit=TimeUnit.millisecond,
+                    elapsed_time="6.68",
+                    elapsed_time_unit=TimeUnit.millisecond,
                 ),
                 LatencyIndividualMeasurementResult(
                     id="test",
@@ -137,8 +137,8 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
                     ip_address="216.58.199.36",
                     icmp_sequence="3",
                     time_to_live="55",
-                    time="6.21",
-                    time_unit=TimeUnit.millisecond,
+                    elapsed_time="6.21",
+                    elapsed_time_unit=TimeUnit.millisecond,
                 ),
                 LatencyIndividualMeasurementResult(
                     id="test",
@@ -150,8 +150,8 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
                     ip_address="216.58.199.36",
                     icmp_sequence="4",
                     time_to_live="55",
-                    time="6.51",
-                    time_unit=TimeUnit.millisecond,
+                    elapsed_time="6.51",
+                    elapsed_time_unit=TimeUnit.millisecond,
                 ),
             ],
             measurement._get_latency_results(
@@ -207,8 +207,8 @@ class DownloadSpeedMeasurementLatencyTestCase(TestCase):
                     packets_received=None,
                     packets_lost=None,
                     packets_lost_unit=None,
-                    time=None,
-                    time_unit=None,
+                    elapsed_time=None,
+                    elapsed_time_unit=None,
                 )
             ],
         )

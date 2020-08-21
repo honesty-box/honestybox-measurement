@@ -98,6 +98,8 @@ class NetflixResultTestCase(TestCase):
                 download_size_unit=StorageUnit("B"),
                 download_rate=0,
                 download_rate_unit=NetworkUnit("bit/s"),
+                download_elapsed_time=0,
+                download_elapsed_time_unit=TimeUnit("s"),
                 minimum_latency=0,
                 average_latency=0,
                 maximum_latency=0,
@@ -106,8 +108,8 @@ class NetflixResultTestCase(TestCase):
                 packets_received=0,
                 packets_lost=0,
                 packets_lost_unit=RatioUnit("%"),
-                time=0,
-                time_unit=TimeUnit("d"),
+                latency_elapsed_time=0,
+                latency_elapsed_time_unit=TimeUnit("d"),
                 errors=[],
             )
             for i in range(3)
@@ -245,8 +247,8 @@ class NetflixResultTestCase(TestCase):
             packets_received=0,
             packets_lost=0,
             packets_lost_unit=RatioUnit("%"),
-            time=0,
-            time_unit=TimeUnit("d"),
+            elapsed_time=0,
+            elapsed_time_unit=TimeUnit("d"),
             errors=[],
         )
         mock_latency_measure.return_value = [mock_latency_result]
@@ -255,6 +257,7 @@ class NetflixResultTestCase(TestCase):
             "location": {"city": "Foreign City One", "country": "Foreign Country One"},
             "download_size": 0,
             "download_rate": 0,
+            "elapsed_time": 0,
         }
         assert (
             self.nft._get_url_result(mock_thread_result)

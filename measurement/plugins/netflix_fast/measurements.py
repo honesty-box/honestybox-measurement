@@ -312,6 +312,8 @@ class NetflixFastMeasurement(BaseMeasurement):
             download_size_unit=StorageUnit("B"),
             download_rate=thread_result["download_rate"],
             download_rate_unit=NetworkUnit("bit/s"),
+            download_elapsed_time=thread_result["elapsed_time"],
+            download_elapsed_time_unit=TimeUnit("s"),
             minimum_latency=LatencyResult.minimum_latency,
             average_latency=LatencyResult.average_latency,
             maximum_latency=LatencyResult.maximum_latency,
@@ -320,8 +322,8 @@ class NetflixFastMeasurement(BaseMeasurement):
             packets_received=LatencyResult.packets_received,
             packets_lost=LatencyResult.packets_lost,
             packets_lost_unit=LatencyResult.packets_lost_unit,
-            time=LatencyResult.time,
-            time_unit=LatencyResult.time_unit,
+            latency_elapsed_time=LatencyResult.elapsed_time,
+            latency_elapsed_time_unit=LatencyResult.elapsed_time_unit,
             errors=LatencyResult.errors,
         )
 

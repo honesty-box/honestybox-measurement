@@ -227,8 +227,8 @@ class DownloadSpeedMeasurementClosestServerTestCase(TestCase):
                     packets_received=None,
                     packets_lost=None,
                     packets_lost_unit=None,
-                    time=None,
-                    time_unit=None,
+                    elapsed_time=None,
+                    elapsed_time_unit=None,
                 ),
             ),
             (
@@ -244,8 +244,8 @@ class DownloadSpeedMeasurementClosestServerTestCase(TestCase):
                     packets_received=None,
                     packets_lost=None,
                     packets_lost_unit=None,
-                    time=None,
-                    time_unit=None,
+                    elapsed_time=None,
+                    elapsed_time_unit=None,
                 ),
             ),
             (
@@ -261,8 +261,8 @@ class DownloadSpeedMeasurementClosestServerTestCase(TestCase):
                     packets_received=None,
                     packets_lost=None,
                     packets_lost_unit=None,
-                    time=None,
-                    time_unit=None,
+                    elapsed_time=None,
+                    elapsed_time_unit=None,
                 ),
             ),
         ]
@@ -292,8 +292,8 @@ class DownloadSpeedMeasurementClosestServerTestCase(TestCase):
                     packets_received=None,
                     packets_lost=None,
                     packets_lost_unit=None,
-                    time=None,
-                    time_unit=None,
+                    elapsed_time=None,
+                    elapsed_time_unit=None,
                 ),
             )
         ]

@@ -30,8 +30,8 @@ class LatencyMeasurementResult(MeasurementResult):
     packets_received: typing.Optional[int]
     packets_lost: typing.Optional[float]
     packets_lost_unit: typing.Optional[RatioUnit]
-    time: typing.Optional[float]
-    time_unit: typing.Optional[TimeUnit]
+    elapsed_time: typing.Optional[float]
+    elapsed_time_unit: typing.Optional[TimeUnit]
 
 
 @dataclass(frozen=True)
@@ -43,5 +43,5 @@ class LatencyIndividualMeasurementResult(MeasurementResult):
     ip_address: typing.Optional[str]
     icmp_sequence: typing.Optional[int]
     time_to_live: typing.Optional[float]
-    time: typing.Optional[float]
-    time_unit: typing.Optional[TimeUnit]
+    elapsed_time: typing.Optional[float]
+    elapsed_time_unit: typing.Optional[TimeUnit]

@@ -14,6 +14,6 @@ else:
 
     NetflixFastThreadResult = collections.namedtuple(
         "NetflixFastThreadResult",
-        "id errors host download_size download_size_unit download_rate download_rate_unit city country minimum_latency average_latency maximum_latency median_deviation"
-        " packets_transmitted packets_received packets_lost packets_lost_unit time time_unit",
+        "id errors host download_size download_size_unit download_rate download_rate_unit download_elapsed_time download_elapsed_time_unit city country "
+        "minimum_latency average_latency maximum_latency median_deviation packets_transmitted packets_received packets_lost packets_lost_unit latency_elapsed_time latency_elapsed_time_unit",
     )
