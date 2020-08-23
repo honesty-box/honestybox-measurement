@@ -13,6 +13,8 @@ class SpeedtestdotnetMeasurementResult(MeasurementResult):
     :param download_rate_unit: The unit of measurement of `download_rate`.
     :param upload_rate: The measured upload rate.
     :param upload_rate_unit: The unit of measurement of `upload_rate`.
+    :param data_received: The quantity of data report by the speedtest utility
+    :param data_received_unit: The unit of measurement of `data_received`
     :param latency: The measured latency.
     :param server_name: The name of the speedtest.net server used to perform
     the speedtestdotnet measurement.
@@ -28,6 +30,8 @@ class SpeedtestdotnetMeasurementResult(MeasurementResult):
     download_rate_unit: typing.Optional[NetworkUnit]
     upload_rate: typing.Optional[float]
     upload_rate_unit: typing.Optional[NetworkUnit]
+    data_received: typing.Optional[float]
+    data_received_unit: typing.Optional[StorageUnit]
     latency: typing.Optional[float]
     server_name: typing.Optional[str]
     server_id: typing.Optional[str]
