@@ -1,4 +1,7 @@
 ## Unreleased
+### Changed
+* Rename trace to route in ip_route result
+
 ### Added
 * [460](https://trello.com/c/BXK9xFfa/46dd-bytesreceived-to-speedtestdotnet-measurement) Add data_received to speedtestdotnet measurement
 

@@ -13,4 +13,4 @@ class IPRouteMeasurementResult(MeasurementResult):
     host: typing.Optional[str]
     hop_count: typing.Optional[int]
     ip: typing.Optional[str]
-    trace: typing.Optional[list]
+    route: typing.Optional[list]

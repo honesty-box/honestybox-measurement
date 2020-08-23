@@ -46,7 +46,7 @@ class IPRouteTestCase(TestCase):
             host=self.example_hosts_one[0],
             hop_count=5,
             ip="final.ip",
-            trace=self.example_trace_five_list,
+            route=self.example_trace_five_list,
             errors=[],
         )
         self.example_result_permission_err = IPRouteMeasurementResult(
@@ -54,7 +54,7 @@ class IPRouteTestCase(TestCase):
             host=None,
             hop_count=None,
             ip=None,
-            trace=None,
+            route=None,
             errors=[
                 Error(
                     key="route-permission",
@@ -68,7 +68,7 @@ class IPRouteTestCase(TestCase):
             host=None,
             hop_count=None,
             ip=None,
-            trace=None,
+            route=None,
             errors=[
                 Error(
                     key="route-address",

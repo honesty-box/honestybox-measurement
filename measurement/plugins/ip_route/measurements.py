@@ -104,7 +104,7 @@ class IPRouteMeasurement(BaseMeasurement):
             host=host,
             ip=ip,
             hop_count=hop_count,
-            trace=trace_list,
+            route=trace_list,
             errors=[],
         )
 
@@ -114,7 +114,7 @@ class IPRouteMeasurement(BaseMeasurement):
             host=None,
             ip=None,
             hop_count=None,
-            trace=None,
+            route=None,
             errors=[
                 Error(
                     key=key, description=ROUTE_ERRORS.get(key, ""), traceback=traceback,
