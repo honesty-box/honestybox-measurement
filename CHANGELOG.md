@@ -1,4 +1,6 @@
 ## Unreleased
+
+## [1.1.0] (2020-08-23)
 ### Changed
 * Rename trace to route in ip_route result
 
