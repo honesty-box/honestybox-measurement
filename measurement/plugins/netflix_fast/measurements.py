@@ -105,7 +105,9 @@ class NetflixFastMeasurement(BaseMeasurement):
 
         results.append(self._get_fast_result())
         for thread_result in self.thread_results:
-            results.append(self._get_url_result(thread_result))
+            results = results + self._get_url_result(thread_result)
+            print(len(results), "\n")
+        print(results)
         return results
 
     def _get_fast_result(self):
@@ -302,30 +304,22 @@ class NetflixFastMeasurement(BaseMeasurement):
         city = thread_result["location"]["city"]
         country = thread_result["location"]["country"]
         LatencyResult = LatencyMeasurement(self.id, host, count=PING_COUNT).measure()[0]
-
-        return NetflixFastThreadResult(
-            id=self.id,
-            host=host,
-            city=city,
-            country=country,
-            download_size=thread_result["download_size"],
-            download_size_unit=StorageUnit("B"),
-            download_rate=thread_result["download_rate"],
-            download_rate_unit=NetworkUnit("bit/s"),
-            download_elapsed_time=thread_result["elapsed_time"],
-            download_elapsed_time_unit=TimeUnit("s"),
-            minimum_latency=LatencyResult.minimum_latency,
-            average_latency=LatencyResult.average_latency,
-            maximum_latency=LatencyResult.maximum_latency,
-            median_deviation=LatencyResult.median_deviation,
-            packets_transmitted=LatencyResult.packets_transmitted,
-            packets_received=LatencyResult.packets_received,
-            packets_lost=LatencyResult.packets_lost,
-            packets_lost_unit=LatencyResult.packets_lost_unit,
-            latency_elapsed_time=LatencyResult.elapsed_time,
-            latency_elapsed_time_unit=LatencyResult.elapsed_time_unit,
-            errors=LatencyResult.errors,
-        )
+        return [
+            NetflixFastThreadResult(
+                id=self.id,
+                host=host,
+                city=city,
+                country=country,
+                download_size=thread_result["download_size"],
+                download_size_unit=StorageUnit("B"),
+                download_rate=thread_result["download_rate"],
+                download_rate_unit=NetworkUnit("bit/s"),
+                elapsed_time=thread_result["elapsed_time"],
+                elapsed_time_unit=TimeUnit("s"),
+                errors=[],
+            ),
+            LatencyResult,
+        ]
 
     def _get_netflix_error(self, key, traceback):
         return NetflixFastMeasurementResult(
