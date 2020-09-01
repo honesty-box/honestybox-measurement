@@ -2,6 +2,10 @@
 ### Added
 * [513](https://trello.com/c/R7q8FpyA/513-add-webpage-download-to-honestybox-measurement) Add webpage measurement
 
+### Changed
+* Separate netflix_fast LatencyMeasurement into a new result
+* [504](https://trello.com/c/rxszmKzV/504-change-honestybox-measurement-netflixfast-time) Change `time`
+
 ## [1.1.0] (2020-08-23)
 ### Changed
 * Rename trace to route in ip_route result
