@@ -106,8 +106,6 @@ class NetflixFastMeasurement(BaseMeasurement):
         results.append(self._get_fast_result())
         for thread_result in self.thread_results:
             results = results + self._get_url_result(thread_result)
-            print(len(results), "\n")
-        print(results)
         return results
 
     def _get_fast_result(self):
