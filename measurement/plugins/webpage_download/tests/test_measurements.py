@@ -204,11 +204,13 @@ class WebpageMeasurementWgetTestCase(TestCase):
             ],
         )
 
+    @mock.patch("shutil.rmtree")
     @mock.patch("subprocess.run")
-    def test_valid_wget_kibit_sec(self, mock_run):
+    def test_valid_wget_kibit_sec(self, mock_run, mock_rmtree):
         mock_run.return_value = subprocess.CompletedProcess(
             args=[], returncode=0, stdout="b''", stderr=self.pretend_wget_out_kibit,
         )
+        mock_rmtree.side_effect = [0]
         self.assertEqual(
             self.valid_wget_kibit_sec,
             self.wpm._get_webpage_result(
@@ -216,11 +218,13 @@ class WebpageMeasurementWgetTestCase(TestCase):
             ),
         )
 
+    @mock.patch("shutil.rmtree")
     @mock.patch("subprocess.run")
-    def test_valid_wget_mibit_sec(self, mock_run):
+    def test_valid_wget_mibit_sec(self, mock_run, mock_rmtree):
         mock_run.return_value = subprocess.CompletedProcess(
             args=[], returncode=0, stdout="b''", stderr=self.pretend_wget_out_mibit,
         )
+        mock_rmtree.side_effect = [0]
         self.assertEqual(
             self.valid_wget_mibit_sec,
             self.wpm._get_webpage_result(
