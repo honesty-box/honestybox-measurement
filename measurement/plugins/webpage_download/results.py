@@ -8,6 +8,6 @@ if six.PY3 and not sys.version_info.minor == 5:  # All python 3 expect for 3.5
 else:
     WebpageMeasurementResult = collections.namedtuple(
         "WebpageMeasurementResult",
-        "id errors url download_rate download_rate_unit "
-        "download_size download_size_unit elapsed_time elapsed_time_unit",
+        "id errors url download_rate download_rate_unit download_size download_size_unit "
+        "downloaded_file_count elapsed_time elapsed_time_unit",
     )
