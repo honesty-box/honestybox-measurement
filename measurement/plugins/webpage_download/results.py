@@ -9,5 +9,5 @@ else:
     WebpageMeasurementResult = collections.namedtuple(
         "WebpageMeasurementResult",
         "id errors url download_rate download_rate_unit download_size download_size_unit "
-        "downloaded_file_count elapsed_time elapsed_time_unit",
+        "asset_count failed_asset_downloads elapsed_time elapsed_time_unit",
     )

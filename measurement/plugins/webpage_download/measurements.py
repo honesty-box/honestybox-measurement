@@ -4,11 +4,14 @@ import re
 import os
 import tempfile
 import shutil
+import requests
 from six.moves.urllib.parse import urlparse
+from bs4 import BeautifulSoup
 
 from measurement.measurements import BaseMeasurement
 from measurement.results import Error
 from measurement.units import RatioUnit, TimeUnit, StorageUnit, NetworkUnit
+import pywebcopy
 
 from measurement.plugins.webpage_download.results import WebpageMeasurementResult
 from measurement.plugins.latency.measurements import LatencyMeasurement
@@ -40,6 +43,17 @@ WGET_DOWNLOAD_SIZE_UNIT_MAP = {
 WGET_TIME_UNIT_MAP = {
     "s": TimeUnit("s"),
 }
+VALID_LINK_EXTENSTIONS = [".css", ".ico", ".png", ".woff2", ""]
+VALID_LINK_REL_ATTRIBUTES = [
+    "manifest",
+    "modulepreload",
+    "preload",
+    "prerender",
+    "stylesheet",
+    "apple-touch-icon",
+    "icon",
+    "shortcut icon",
+]
 
 
 class WebpageMeasurement(BaseMeasurement):
@@ -51,12 +65,14 @@ class WebpageMeasurement(BaseMeasurement):
 
     def measure(self):
         host = urlparse(self.url).netloc
-        return [
-            self._get_webpage_result(self.url, self.download_timeout),
-            LatencyMeasurement(self.id, host, count=self.count).measure(),
-        ]
+        print(host)
+        self._get_webpage_result_requests(self.url, host, self.download_timeout)
+        # return [
+        #     self._get_webpage_result(self.url, self.download_timeout),
+        #     LatencyMeasurement(self.id, host, count=self.count).measure(),
+        # ]
 
-    def _get_webpage_result(self, url, download_timeout):
+    def _get_webpage_result(self, url, host, download_timeout):
         tmp_dir = "{}/webpage_download_{}".format(tempfile.gettempdir(), os.getpid())
         try:
             wget_out = subprocess.run(
@@ -88,6 +104,9 @@ class WebpageMeasurement(BaseMeasurement):
             return self._get_webpage_error("wget-err", traceback=str(wget_out.stderr))
         try:
             wget_data = wget_out.stderr
+            import pprint
+
+            pprint.pprint(wget_data)
         except IndexError:
             return self._get_webpage_error("wget-split", traceback=str(wget_out.stderr))
         matches = WGET_OUTPUT_REGEX.search(wget_data)
@@ -148,6 +167,105 @@ class WebpageMeasurement(BaseMeasurement):
             "elapsed_time_unit": elapsed_time_unit,
         }
 
+    def _get_webpage_result_requests(self, url, host, download_timeout):
+        # headers = {
+        #     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36"
+        # }
+        s = requests.Session()
+        headers = {
+            # 'authority': 'scrapeme.live',
+            "dnt": "1",
+            "upgrade-insecure-requests": "1",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "sec-fetch-site": "none",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-user": "?1",
+            "sec-fetch-dest": "document",
+            "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+        }
+
+        # Lets test what headers are sent by sending a request to HTTPBin
+        start_time = time.time()
+        r = s.get(url, headers=headers)
+        to_download = self._parse_html(r.text)
+        asset_download_metrics = self._download_assets(s, to_download, host)
+
+        primary_download_size = len(r.text)
+        asset_download_size = asset_download_metrics["asset_download_size"]
+        elapsed_time = asset_download_metrics["completion_time"] - start_time
+        download_rate = (primary_download_size + asset_download_size) * 8 / elapsed_time
+        failed_asset_downloads = asset_download_metrics["failed_asset_downloads"]
+
+        # print({
+        #     "primary_download_size": primary_download_size,
+        #     "asset_download_size": asset_download_size,
+        #     "elapsed_time": elapsed_time,
+        #     "download_rate": download_rate
+        # })
+        return WebpageMeasurementResult(
+            id=self.id,
+            url=url,
+            download_rate=download_rate,
+            download_rate_unit=NetworkUnit("bit/s"),
+            download_size=primary_download_size + asset_download_size,
+            download_size_unit=StorageUnit("B"),
+            asset_count=len(to_download),
+            failed_asset_downloads=failed_asset_downloads,
+            elapsed_time=elapsed_time,
+            elapsed_time_unit=TimeUnit("s"),
+            errors=[],
+        )
+
+    def _parse_html(self, content):
+        soup = BeautifulSoup(content, "html.parser")
+        # hlinks = soup.find_all("a")
+        imgs = soup.find_all("img")
+        links = soup.find_all("link")
+        scripts = soup.find_all("script")
+        to_download = []
+        for img in imgs:
+            if img.has_attr("src"):
+                to_download.append(img["src"])
+        for script in scripts:
+            if script.has_attr("src"):
+                to_download.append(script["src"])
+        for link in links:
+            print(link["rel"][0])
+            if link["rel"][0] in VALID_LINK_REL_ATTRIBUTES:
+                to_download.append(link["href"])
+
+        return to_download
+
+    def _download_assets(self, session, to_download, host):
+        # Store the amount of bytes downloaded
+        asset_download_sizes = []
+        failed_asset_downloads = 0
+        for asset in to_download:
+            try:
+                # Identify data URLs (already downloaded inline, counted in main download size)
+                if "data:" in asset:
+                    continue
+
+                # Check if path w/o preceeding slashes is a valid URL
+                if asset.startswith("//"):
+                    download_url = "http:" + asset
+                # Check if path is a relative path
+                elif asset.startswith("/"):
+                    download_url = "http://" + host + asset
+                # ...or simply a normal file link
+                else:
+                    download_url = asset
+                asset_download_sizes.append(len(session.get(download_url).text))
+            except ConnectionError:
+                failed_asset_downloads = failed_asset_downloads + 1
+
+        return {
+            "asset_download_size": sum(asset_download_sizes),
+            "failed_asset_downloads": failed_asset_downloads,
+            "completion_time": time.time(),
+        }
+
     def _get_webpage_error(self, key, traceback):
         return WebpageMeasurementResult(
             id=self.id,
@@ -156,7 +274,8 @@ class WebpageMeasurement(BaseMeasurement):
             download_rate=None,
             download_size=None,
             download_size_unit=None,
-            downloaded_file_count=None,
+            asset_count=None,
+            failed_asset_downloads=None,
             elapsed_time=None,
             elapsed_time_unit=None,
             errors=[
