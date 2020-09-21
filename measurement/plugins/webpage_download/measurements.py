@@ -32,6 +32,12 @@ WGET_ERRORS = {
     "wget-timeout": "Measurement request timed out.",
     "wget-no-directory": "Could not remove created temp directory.",
 }
+WEB_ERRORS = {
+    "web-get": "Failed to complete the initial connection",
+    "web-parse": "Failed to parse assets from HTML",
+    "web-parse-rel": "Failed to determine 'rel' attribute of link",
+    "web-assets": "Failed to download secondary assets",
+}
 WGET_DOWNLOAD_RATE_UNIT_MAP = {
     "Kb/s": NetworkUnit("Kibit/s"),
     "Mb/s": NetworkUnit("Mibit/s"),
@@ -65,14 +71,12 @@ class WebpageMeasurement(BaseMeasurement):
 
     def measure(self):
         host = urlparse(self.url).netloc
-        print(host)
-        self._get_webpage_result_requests(self.url, host, self.download_timeout)
-        # return [
-        #     self._get_webpage_result(self.url, self.download_timeout),
-        #     LatencyMeasurement(self.id, host, count=self.count).measure(),
-        # ]
+        return [
+            self._get_webpage_result(self.url, self.download_timeout),
+            LatencyMeasurement(self.id, host, count=self.count).measure(),
+        ]
 
-    def _get_webpage_result(self, url, host, download_timeout):
+    def _get_webpage_result_wget(self, url, host, download_timeout):
         tmp_dir = "{}/webpage_download_{}".format(tempfile.gettempdir(), os.getpid())
         try:
             wget_out = subprocess.run(
@@ -167,13 +171,9 @@ class WebpageMeasurement(BaseMeasurement):
             "elapsed_time_unit": elapsed_time_unit,
         }
 
-    def _get_webpage_result_requests(self, url, host, download_timeout):
-        # headers = {
-        #     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36"
-        # }
+    def _get_webpage_result(self, url, host, download_timeout):
         s = requests.Session()
         headers = {
-            # 'authority': 'scrapeme.live',
             "dnt": "1",
             "upgrade-insecure-requests": "1",
             "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36",
@@ -185,11 +185,19 @@ class WebpageMeasurement(BaseMeasurement):
             "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
         }
 
-        # Lets test what headers are sent by sending a request to HTTPBin
         start_time = time.time()
-        r = s.get(url, headers=headers)
-        to_download = self._parse_html(r.text)
-        asset_download_metrics = self._download_assets(s, to_download, host)
+        try:
+            r = s.get(url, headers=headers)
+        except ConnectionError as e:
+            return self._get_webpage_error("web-get", traceback=str(e))
+        try:
+            to_download = self._parse_html(r.text)
+        except TypeError as e:
+            return self._get_webpage_error("web-parse-rel", traceback=str(e))
+        try:
+            asset_download_metrics = self._download_assets(s, to_download, host)
+        except TypeError as e:
+            return self._get_webpage_error("web-assets", traceback=str(e))
 
         primary_download_size = len(r.text)
         asset_download_size = asset_download_metrics["asset_download_size"]
@@ -197,12 +205,6 @@ class WebpageMeasurement(BaseMeasurement):
         download_rate = (primary_download_size + asset_download_size) * 8 / elapsed_time
         failed_asset_downloads = asset_download_metrics["failed_asset_downloads"]
 
-        # print({
-        #     "primary_download_size": primary_download_size,
-        #     "asset_download_size": asset_download_size,
-        #     "elapsed_time": elapsed_time,
-        #     "download_rate": download_rate
-        # })
         return WebpageMeasurementResult(
             id=self.id,
             url=url,
@@ -231,9 +233,10 @@ class WebpageMeasurement(BaseMeasurement):
             if script.has_attr("src"):
                 to_download.append(script["src"])
         for link in links:
-            print(link["rel"][0])
-            if link["rel"][0] in VALID_LINK_REL_ATTRIBUTES:
-                to_download.append(link["href"])
+            if link.has_attr("rel") & link.has_attr("href"):
+                rel = " ".join(link["rel"])
+                if rel in VALID_LINK_REL_ATTRIBUTES:
+                    to_download.append(link["href"])
 
         return to_download
 
@@ -249,15 +252,21 @@ class WebpageMeasurement(BaseMeasurement):
 
                 # Check if path w/o preceeding slashes is a valid URL
                 if asset.startswith("//"):
-                    download_url = "http:" + asset
+                    download_url = "https:" + asset
                 # Check if path is a relative path
                 elif asset.startswith("/"):
-                    download_url = "http://" + host + asset
+                    download_url = "https://" + host + asset
                 # ...or simply a normal file link
                 else:
                     download_url = asset
-                asset_download_sizes.append(len(session.get(download_url).text))
+
+                a = session.get(download_url)
+                if a.status_code >= 400:
+                    raise ConnectionError
+                asset_download_sizes.append(len(a.text))
             except ConnectionError:
+                failed_asset_downloads = failed_asset_downloads + 1
+            except requests.exceptions.MissingSchema:
                 failed_asset_downloads = failed_asset_downloads + 1
 
         return {
@@ -280,7 +289,7 @@ class WebpageMeasurement(BaseMeasurement):
             elapsed_time_unit=None,
             errors=[
                 Error(
-                    key=key, description=WGET_ERRORS.get(key, ""), traceback=traceback,
+                    key=key, description=WEB_ERRORS.get(key, ""), traceback=traceback,
                 )
             ],
         )
