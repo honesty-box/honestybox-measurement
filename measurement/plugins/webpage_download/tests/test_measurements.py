@@ -444,7 +444,7 @@ class WebpageMeasurementResultsTestCase(TestCase):
         mock_get_session.return_value = mock_session
         self.assertEqual(
             self.wpm._get_webpage_result(
-                "http://validfakehost.com/test", "validfakehost.com", 180
+                "http://validfakehost.com/test", "validfakehost.com"
             ),
             self.simple_webpage_output,
         )
@@ -468,7 +468,7 @@ class WebpageMeasurementResultsTestCase(TestCase):
         mock_get_session.return_value = mock_session
         self.assertEqual(
             self.wpm._get_webpage_result(
-                "http://validfakehost.com/test", "validfakehost.com", 180
+                "http://validfakehost.com/test", "validfakehost.com"
             ),
             self.get_error_result,
         )
@@ -544,9 +544,18 @@ class WebpageAssetDownloadTestCase(TestCase):
             "//res.validfakehost.com/fonts/a_font.woff2",
         ]
         self.all_success_urls_transformed = [
-            call("https://validfakehost.com/an_image.jpg"),
-            call("https://validfakehost.com/resources/client/a_stylesheet.css"),
-            call("https://res.validfakehost.com/fonts/a_font.woff2"),
+            call(
+                "https://validfakehost.com/an_image.jpg",
+                timeout=self.wpm.download_timeout,
+            ),
+            call(
+                "https://validfakehost.com/resources/client/a_stylesheet.css",
+                timeout=self.wpm.download_timeout,
+            ),
+            call(
+                "https://res.validfakehost.com/fonts/a_font.woff2",
+                timeout=self.wpm.download_timeout,
+            ),
         ]
         self.all_success_dict = {
             "asset_download_size": 3,

@@ -37,6 +37,7 @@ WEB_ERRORS = {
     "web-parse": "Failed to parse assets from HTML",
     "web-parse-rel": "Failed to determine 'rel' attribute of link",
     "web-assets": "Failed to download secondary assets",
+    "web-timeout": "Initial page download timed out",
 }
 WGET_DOWNLOAD_RATE_UNIT_MAP = {
     "Kb/s": NetworkUnit("Kibit/s"),
@@ -72,7 +73,7 @@ class WebpageMeasurement(BaseMeasurement):
     def measure(self):
         host = urlparse(self.url).netloc
         return [
-            self._get_webpage_result(self.url, self.download_timeout),
+            self._get_webpage_result(self.url, host),
             LatencyMeasurement(self.id, host, count=self.count).measure(),
         ]
 
@@ -171,7 +172,7 @@ class WebpageMeasurement(BaseMeasurement):
             "elapsed_time_unit": elapsed_time_unit,
         }
 
-    def _get_webpage_result(self, url, host, download_timeout):
+    def _get_webpage_result(self, url, host):
         s = requests.Session()
         headers = {
             "dnt": "1",
@@ -187,9 +188,11 @@ class WebpageMeasurement(BaseMeasurement):
 
         start_time = time.time()
         try:
-            r = s.get(url, headers=headers)
+            r = s.get(url, headers=headers, timeout=self.download_timeout)
         except ConnectionError as e:
             return self._get_webpage_error("web-get", traceback=str(e))
+        except requests.exceptions.ReadTimeout as e:
+            return self._get_webpage_error("web-timeout", traceback=str(e))
         try:
             to_download = self._parse_html(r.text)
         except TypeError as e:
@@ -234,6 +237,7 @@ class WebpageMeasurement(BaseMeasurement):
                 to_download.append(script["src"])
         for link in links:
             if link.has_attr("rel") & link.has_attr("href"):
+                # Join in the case where `rel` is more than one word
                 rel = " ".join(link["rel"])
                 if rel in VALID_LINK_REL_ATTRIBUTES:
                     to_download.append(link["href"])
@@ -260,13 +264,15 @@ class WebpageMeasurement(BaseMeasurement):
                 else:
                     download_url = asset
 
-                a = session.get(download_url)
+                a = session.get(download_url, timeout=self.download_timeout)
                 if a.status_code >= 400:
                     raise ConnectionError
                 asset_download_sizes.append(len(a.text))
             except ConnectionError:
                 failed_asset_downloads = failed_asset_downloads + 1
             except requests.exceptions.MissingSchema:
+                failed_asset_downloads = failed_asset_downloads + 1
+            except requests.exceptions.ReadTimeout:
                 failed_asset_downloads = failed_asset_downloads + 1
 
         return {
