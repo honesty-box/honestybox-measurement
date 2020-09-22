@@ -7,35 +7,13 @@ import subprocess
 
 from measurement.plugins.latency.measurements import LatencyMeasurement
 from measurement.results import Error
-from measurement.plugins.webpage_download.measurements import WGET_OUTPUT_REGEX
 from measurement.plugins.webpage_download.measurements import WebpageMeasurement
-from measurement.plugins.webpage_download.measurements import WGET_ERRORS
 from measurement.plugins.webpage_download.measurements import WEB_ERRORS
 
 from measurement.plugins.webpage_download.results import WebpageMeasurementResult
 from measurement.plugins.latency.results import LatencyMeasurementResult
 
 from measurement.units import NetworkUnit, StorageUnit, TimeUnit, RatioUnit
-
-# NOTE: To match what subprocess calls output, wget output strings
-#       should end with "\n\n" and latency output strings should end with "\n"
-
-
-def test_wget_output_regex_accepts_anticipated_format():
-    anticipated_format = six.ensure_str(
-        "FINISHED --2020-09-07 11:35:57--\nTotal wall clock time: 2.4s\nDownloaded: 117 files, 2.4M in 0.3s (75.8 Mb/s)\n"
-    )
-    results = WGET_OUTPUT_REGEX.search(anticipated_format).groupdict()
-    assert results == {
-        "download_rate": "75.8",
-        "download_rate_unit": "Mb/s",
-        "download_size": "2.4",
-        "download_size_unit": "M",
-        "file_count": "117",
-        "elapsed_time": "0.3",
-        "elapsed_time_unit": "s",
-    }
-
 
 # class WebpageMeasurementWgetTestCase(TestCase):
 #     def setUp(self) -> None:
