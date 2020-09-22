@@ -7,8 +7,7 @@ from measurement.units import TimeUnit, StorageUnit, RatioUnit, NetworkUnit
 
 @dataclass(frozen=True)
 class NetflixFastMeasurementResult(MeasurementResult):
-    """Encapsulates the results from a NetflixFast measurement.
-    """
+    """Encapsulates the results from a NetflixFast measurement."""
 
     download_rate: typing.Optional[float]
     download_rate_unit: typing.Optional[NetworkUnit]
@@ -25,8 +24,7 @@ class NetflixFastMeasurementResult(MeasurementResult):
 
 @dataclass(frozen=True)
 class NetflixFastThreadResult(MeasurementResult):
-    """Encapsulates the latency test results from an individual download url.
-    """
+    """Encapsulates the latency test results from an individual download url."""
 
     host: str
     download_size: typing.Optional[float]

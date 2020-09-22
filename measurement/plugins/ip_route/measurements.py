@@ -117,7 +117,7 @@ class IPRouteMeasurement(BaseMeasurement):
             route=None,
             errors=[
                 Error(
-                    key=key, description=ROUTE_ERRORS.get(key, ""), traceback=traceback,
+                    key=key, description=ROUTE_ERRORS.get(key, ""), traceback=traceback
                 )
             ],
         )

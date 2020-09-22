@@ -24,7 +24,7 @@ class Error:
 
 @dataclass(frozen=True)
 class MeasurementResult:
-    """"A standard interface for measurement results
+    """ "A standard interface for measurement results
 
     :param id: A unique identifier for the measurement result.
     :param errors: The errors that occurred while attempting to take

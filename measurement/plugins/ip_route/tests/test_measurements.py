@@ -1,10 +1,7 @@
 import socket
 from unittest import TestCase, mock
 
-from measurement.plugins.ip_route.measurements import (
-    IPRouteMeasurement,
-    ROUTE_ERRORS,
-)
+from measurement.plugins.ip_route.measurements import IPRouteMeasurement, ROUTE_ERRORS
 from measurement.plugins.latency.measurements import LatencyMeasurement
 from measurement.plugins.ip_route.results import IPRouteMeasurementResult
 from measurement.plugins.latency.results import LatencyMeasurementResult
@@ -289,7 +286,7 @@ class IPRouteMeasurementLeastLatentTestCase(TestCase):
                 packets_lost_unit=None,
                 time=None,
                 time_unit=None,
-            ),
+            )
         ]
         self.iprm_three = IPRouteMeasurement(
             self.id, hosts=self.example_hosts_three, count=4
@@ -334,7 +331,7 @@ class IPRouteMeasurementCreationTestCase(TestCase):
 
     def test_invalid_negative_count(self, *args):
         self.assertRaises(
-            ValueError, IPRouteMeasurement, "test", ["validfakeurl.com"], count=-2,
+            ValueError, IPRouteMeasurement, "test", ["validfakeurl.com"], count=-2
         )
 
     def test_valid_ip_host(self):

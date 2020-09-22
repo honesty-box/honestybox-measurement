@@ -7,8 +7,7 @@ from measurement.units import TimeUnit, StorageUnit, RatioUnit, NetworkUnit
 
 @dataclass(frozen=True)
 class WebpageMeasurementResult(MeasurementResult):
-    """Encapsulates the results from a Webpage download measurement.
-    """
+    """Encapsulates the results from a Webpage download measurement."""
 
     url: typing.Optional[str]
     download_rate: typing.Optional[float]
