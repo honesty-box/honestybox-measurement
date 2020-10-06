@@ -26,6 +26,7 @@ requests = "^2.23.0"
 statistics = "^1.0.3"
 youtube_dl = "^2020.6.16"
 scapy = {version = "^2.4.4-rc.2", allow-prereleases = true}
+netifaces = "^0.10.9"
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
 tox = "^3.13"
