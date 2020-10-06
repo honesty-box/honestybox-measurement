@@ -422,7 +422,7 @@ class WebpageMeasurementResultsTestCase(TestCase):
         mock_get_session.return_value = mock_session
         self.assertEqual(
             self.wpm._get_webpage_result(
-                "http://validfakehost.com/test", "validfakehost.com"
+                "http://validfakehost.com/test", "validfakehost.com", "https"
             ),
             self.simple_webpage_output,
         )
@@ -446,7 +446,7 @@ class WebpageMeasurementResultsTestCase(TestCase):
         mock_get_session.return_value = mock_session
         self.assertEqual(
             self.wpm._get_webpage_result(
-                "http://validfakehost.com/test", "validfakehost.com"
+                "http://validfakehost.com/test", "validfakehost.com", "https"
             ),
             self.get_error_result,
         )
@@ -564,7 +564,7 @@ class WebpageAssetDownloadTestCase(TestCase):
         mock_session.get.side_effect = responses
         self.assertEqual(
             self.wpm._download_assets(
-                mock_session, self.all_url_types, "validfakehost.com"
+                mock_session, self.all_url_types, "validfakehost.com", "https"
             ),
             self.all_success_dict,
         )
@@ -578,7 +578,9 @@ class WebpageAssetDownloadTestCase(TestCase):
             response.status_code = 200
             responses.append(response)
         mock_session.get.side_effect = responses
-        self.wpm._download_assets(mock_session, self.all_url_types, "validfakehost.com")
+        self.wpm._download_assets(
+            mock_session, self.all_url_types, "validfakehost.com", "https"
+        )
         mock_session.get.assert_has_calls(self.all_success_urls_transformed)
 
     @mock.patch("time.time")
@@ -598,7 +600,7 @@ class WebpageAssetDownloadTestCase(TestCase):
         mock_session.get.side_effect = responses
         self.assertEqual(
             self.wpm._download_assets(
-                mock_session, self.all_url_types, "validfakehost.com"
+                mock_session, self.all_url_types, "validfakehost.com", "https"
             ),
             self.one_failure_dict,
         )
@@ -617,7 +619,7 @@ class WebpageAssetDownloadTestCase(TestCase):
         mock_session.get.side_effect = responses
         self.assertEqual(
             self.wpm._download_assets(
-                mock_session, self.all_url_types, "validfakehost.com"
+                mock_session, self.all_url_types, "validfakehost.com", "https"
             ),
             self.one_failure_dict,
         )
@@ -636,7 +638,7 @@ class WebpageAssetDownloadTestCase(TestCase):
         mock_session.get.side_effect = responses
         self.assertEqual(
             self.wpm._download_assets(
-                mock_session, self.all_url_types, "validfakehost.com"
+                mock_session, self.all_url_types, "validfakehost.com", "https"
             ),
             self.all_failure_dict,
         )

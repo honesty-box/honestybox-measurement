@@ -40,12 +40,13 @@ class WebpageMeasurement(BaseMeasurement):
 
     def measure(self):
         host = urlparse(self.url).netloc
+        protocol = urlparse(self.url).scheme
         return [
-            self._get_webpage_result(self.url, host),
+            self._get_webpage_result(self.url, host, protocol),
             LatencyMeasurement(self.id, host, count=self.count).measure(),
         ]
 
-    def _get_webpage_result(self, url, host):
+    def _get_webpage_result(self, url, host, protocol):
         s = requests.Session()
         headers = {
             "dnt": "1",
@@ -71,7 +72,9 @@ class WebpageMeasurement(BaseMeasurement):
         except TypeError as e:
             return self._get_webpage_error("web-parse-rel", traceback=str(e))
         try:
-            asset_download_metrics = self._download_assets(s, to_download, host)
+            asset_download_metrics = self._download_assets(
+                s, to_download, host, protocol
+            )
         except TypeError as e:
             return self._get_webpage_error("web-assets", traceback=str(e))
 
@@ -117,7 +120,7 @@ class WebpageMeasurement(BaseMeasurement):
 
         return to_download
 
-    def _download_assets(self, session, to_download, host):
+    def _download_assets(self, session, to_download, host, protocol):
         # Store the amount of bytes downloaded
         asset_download_sizes = []
         failed_asset_downloads = 0
@@ -129,10 +132,10 @@ class WebpageMeasurement(BaseMeasurement):
 
                 # Check if path w/o preceeding slashes is a valid URL
                 if asset.startswith("//"):
-                    download_url = "https:" + asset
+                    download_url = protocol + ":" + asset
                 # Check if path is a relative path
                 elif asset.startswith("/"):
-                    download_url = "https://" + host + asset
+                    download_url = protocol + "://" + host + asset
                 # ...or simply a normal file link
                 else:
                     download_url = asset
