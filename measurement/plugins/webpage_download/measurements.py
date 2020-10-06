@@ -100,7 +100,6 @@ class WebpageMeasurement(BaseMeasurement):
 
     def _parse_html(self, content):
         soup = BeautifulSoup(content, "html.parser")
-        # hlinks = soup.find_all("a")
         imgs = soup.find_all("img")
         links = soup.find_all("link")
         scripts = soup.find_all("script")
