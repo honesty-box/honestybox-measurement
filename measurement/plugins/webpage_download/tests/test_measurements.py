@@ -33,21 +33,6 @@ class WebpageMeasurementResultsTestCase(TestCase):
             elapsed_time_unit=TimeUnit("s"),
             errors=[],
         )
-        self.simple_latency_output = LatencyMeasurementResult(
-            id=("test"),
-            host="validfakehost.com",
-            minimum_latency=0,
-            average_latency=0,
-            maximum_latency=0,
-            median_deviation=0,
-            packets_transmitted=0,
-            packets_received=0,
-            packets_lost=0,
-            packets_lost_unit=RatioUnit("%"),
-            time=0,
-            time_unit=TimeUnit("d"),
-            errors=[],
-        )
         self.simple_asset_download_metrics = {
             "asset_download_size": 90,
             "failed_asset_downloads": 0,
@@ -73,16 +58,12 @@ class WebpageMeasurementResultsTestCase(TestCase):
             ],
         )
 
-    @mock.patch("measurement.plugins.latency.measurements.LatencyMeasurement.measure")
     @mock.patch(
         "measurement.plugins.webpage_download.measurements.WebpageMeasurement._get_webpage_result"
     )
-    def test_measure(self, mock_get_webpage, mock_get_latency):
+    def test_measure(self, mock_get_webpage):
         mock_get_webpage.return_value = self.simple_webpage_output
-        mock_get_latency.return_value = self.simple_latency_output
-        self.assertEqual(
-            self.wpm.measure(), [self.simple_webpage_output, self.simple_latency_output]
-        )
+        self.assertEqual(self.wpm.measure(), self.simple_webpage_output)
 
     @mock.patch(
         "measurement.plugins.webpage_download.measurements.WebpageMeasurement._download_assets"

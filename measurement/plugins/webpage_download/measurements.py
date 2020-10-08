@@ -41,10 +41,7 @@ class WebpageMeasurement(BaseMeasurement):
     def measure(self):
         host = urlparse(self.url).netloc
         protocol = urlparse(self.url).scheme
-        return [
-            self._get_webpage_result(self.url, host, protocol),
-            LatencyMeasurement(self.id, host, count=self.count).measure(),
-        ]
+        return self._get_webpage_result(self.url, host, protocol)
 
     def _get_webpage_result(self, url, host, protocol):
         s = requests.Session()
