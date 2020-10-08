@@ -60,7 +60,7 @@ class WebpageMeasurement(BaseMeasurement):
         start_time = time.time()
         try:
             r = s.get(url, headers=headers, timeout=self.download_timeout)
-        except ConnectionError as e:
+        except (ConnectionError, requests.ConnectionError) as e:
             return self._get_webpage_error("web-get", traceback=str(e))
         except requests.exceptions.ReadTimeout as e:
             return self._get_webpage_error("web-timeout", traceback=str(e))
