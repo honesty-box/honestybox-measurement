@@ -41,6 +41,5 @@ class BaseMeasurement(object):
         self.id = id
 
     def measure(self):
-        """Perform the measurement and return the measurement results.
-        """
+        """Perform the measurement and return the measurement results."""
         raise NotImplementedError

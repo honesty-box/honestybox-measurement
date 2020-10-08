@@ -4,10 +4,7 @@ from unittest import TestCase, mock
 
 import youtube_dl
 
-from measurement.plugins.youtube.measurements import (
-    YouTubeMeasurement,
-    YOUTUBE_ERRORS,
-)
+from measurement.plugins.youtube.measurements import YouTubeMeasurement, YOUTUBE_ERRORS
 from measurement.plugins.youtube.results import YouTubeMeasurementResult
 from measurement.plugins.latency.results import LatencyMeasurementResult
 from measurement.results import Error
@@ -111,7 +108,7 @@ class YoutubeResultTestCase(TestCase):
                 "filename": "/tmp/youtube-dl_31918/1234567890_Fake Video.mp4",
                 "status": "finished",
                 "total_bytes": 123456789,
-            },
+            }
         ]
         self.mock_valid_youtube_result = YouTubeMeasurementResult(
             id=self.id,

@@ -1,4 +1,6 @@
 ## Unreleased
+### Added
+* [513](https://trello.com/c/R7q8FpyA/513-add-webpage-download-to-honestybox-measurement) Add webpage measurement
 
 ## [1.1.0] (2020-08-23)
 ### Changed
