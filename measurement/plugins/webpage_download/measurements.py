@@ -1,12 +1,12 @@
 import time
-import requests
 from six.moves.urllib.parse import urlparse
+
+import requests
 from bs4 import BeautifulSoup
 
 from measurement.measurements import BaseMeasurement
 from measurement.results import Error
 from measurement.units import RatioUnit, TimeUnit, StorageUnit, NetworkUnit
-
 from measurement.plugins.webpage_download.results import WebpageMeasurementResult
 from measurement.plugins.latency.measurements import LatencyMeasurement
 
