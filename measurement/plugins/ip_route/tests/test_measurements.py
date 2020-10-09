@@ -88,8 +88,8 @@ class IPRouteTestCase(TestCase):
                     packets_received=None,
                     packets_lost=None,
                     packets_lost_unit=None,
-                    time=None,
-                    time_unit=None,
+                    elapsed_time=None,
+                    elapsed_time_unit=None,
                 ),
             ),
             (
@@ -105,8 +105,8 @@ class IPRouteTestCase(TestCase):
                     packets_received=None,
                     packets_lost=None,
                     packets_lost_unit=None,
-                    time=None,
-                    time_unit=None,
+                    elapsed_time=None,
+                    elapsed_time_unit=None,
                 ),
             ),
             (
@@ -122,8 +122,8 @@ class IPRouteTestCase(TestCase):
                     packets_received=None,
                     packets_lost=None,
                     packets_lost_unit=None,
-                    time=None,
-                    time_unit=None,
+                    elapsed_time=None,
+                    elapsed_time_unit=None,
                 ),
             ),
         ]
@@ -141,8 +141,8 @@ class IPRouteTestCase(TestCase):
                     packets_received=None,
                     packets_lost=None,
                     packets_lost_unit=None,
-                    time=None,
-                    time_unit=None,
+                    elapsed_time=None,
+                    elapsed_time_unit=None,
                 ),
             ),
         )
@@ -231,8 +231,8 @@ class IPRouteMeasurementLeastLatentTestCase(TestCase):
                     packets_received=None,
                     packets_lost=None,
                     packets_lost_unit=None,
-                    time=None,
-                    time_unit=None,
+                    elapsed_time=None,
+                    elapsed_time_unit=None,
                 ),
             ),
             (
@@ -248,8 +248,8 @@ class IPRouteMeasurementLeastLatentTestCase(TestCase):
                     packets_received=None,
                     packets_lost=None,
                     packets_lost_unit=None,
-                    time=None,
-                    time_unit=None,
+                    elapsed_time=None,
+                    elapsed_time_unit=None,
                 ),
             ),
             (
@@ -265,8 +265,8 @@ class IPRouteMeasurementLeastLatentTestCase(TestCase):
                     packets_received=None,
                     packets_lost=None,
                     packets_lost_unit=None,
-                    time=None,
-                    time_unit=None,
+                    elapsed_time=None,
+                    elapsed_time_unit=None,
                 ),
             ),
         ]
@@ -284,9 +284,9 @@ class IPRouteMeasurementLeastLatentTestCase(TestCase):
                 packets_received=None,
                 packets_lost=None,
                 packets_lost_unit=None,
-                time=None,
-                time_unit=None,
-            )
+                elapsed_time=None,
+                elapsed_time_unit=None,
+            ),
         ]
         self.iprm_three = IPRouteMeasurement(
             self.id, hosts=self.example_hosts_three, count=4

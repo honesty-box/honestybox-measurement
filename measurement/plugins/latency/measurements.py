@@ -180,8 +180,8 @@ class LatencyMeasurement(BaseMeasurement):
         packets_transmitted = int(match_data.get("packets_transmitted"))
         packets_received = int(match_data.get("packets_received"))
         packet_loss = float(match_data.get("packet_loss"))
-        time_taken = float(match_data.get("time"))
-        time_unit = match_data.get("time_unit")
+        elapsed_time = float(match_data.get("time"))
+        elapsed_time_unit = match_data.get("time_unit")
 
         results = [
             LatencyMeasurementResult(
@@ -195,8 +195,8 @@ class LatencyMeasurement(BaseMeasurement):
                 packets_received=packets_received,
                 packets_lost=packet_loss,
                 packets_lost_unit=RatioUnit.percentage,
-                time=time_taken,
-                time_unit=TimeUnit(time_unit),
+                elapsed_time=elapsed_time,
+                elapsed_time_unit=TimeUnit(elapsed_time_unit),
                 errors=[],
             )
         ]
@@ -215,8 +215,8 @@ class LatencyMeasurement(BaseMeasurement):
                         ip_address=match[3],
                         icmp_sequence=match[4],
                         time_to_live=match[5],
-                        time=match[6],
-                        time_unit=TimeUnit(match[7]),
+                        elapsed_time=match[6],
+                        elapsed_time_unit=TimeUnit(match[7]),
                     )
                 )
 
@@ -234,8 +234,8 @@ class LatencyMeasurement(BaseMeasurement):
             packets_received=None,
             packets_lost=None,
             packets_lost_unit=None,
-            time=None,
-            time_unit=None,
+            elapsed_time=None,
+            elapsed_time_unit=None,
             errors=[
                 Error(
                     key=key,

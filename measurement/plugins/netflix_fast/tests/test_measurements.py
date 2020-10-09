@@ -89,28 +89,102 @@ class NetflixResultTestCase(TestCase):
             errors=[],
         )
         self.thread_result_three_list = [
-            NetflixFastThreadResult(
-                id="1",
-                host="afakeurl.1.notreal.net",
-                city=self.api_response_three["targets"][i]["location"]["city"],
-                country=self.api_response_three["targets"][i]["location"]["country"],
-                download_size=0,
-                download_size_unit=StorageUnit("B"),
-                download_rate=0,
-                download_rate_unit=NetworkUnit("bit/s"),
-                minimum_latency=0,
-                average_latency=0,
-                maximum_latency=0,
-                median_deviation=0,
-                packets_transmitted=0,
-                packets_received=0,
-                packets_lost=0,
-                packets_lost_unit=RatioUnit("%"),
-                time=0,
-                time_unit=TimeUnit("d"),
-                errors=[],
-            )
-            for i in range(3)
+            [
+                NetflixFastThreadResult(
+                    id="1",
+                    host="afakeurl.1.notreal.net",
+                    city=self.api_response_three["targets"][0]["location"]["city"],
+                    country=self.api_response_three["targets"][0]["location"][
+                        "country"
+                    ],
+                    download_size=0,
+                    download_size_unit=StorageUnit("B"),
+                    download_rate=0,
+                    download_rate_unit=NetworkUnit("bit/s"),
+                    elapsed_time=0,
+                    elapsed_time_unit=TimeUnit("s"),
+                    errors=[],
+                ),
+                LatencyMeasurementResult(
+                    id="1",
+                    host="afakeurl.1.notreal.net",
+                    minimum_latency=0,
+                    average_latency=0,
+                    maximum_latency=0,
+                    median_deviation=0,
+                    packets_transmitted=0,
+                    packets_received=0,
+                    packets_lost=0,
+                    packets_lost_unit=RatioUnit("%"),
+                    elapsed_time=0,
+                    elapsed_time_unit=TimeUnit("d"),
+                    errors=[],
+                ),
+            ],
+            [
+                NetflixFastThreadResult(
+                    id="1",
+                    host="afakeurl.1.notreal.net",
+                    city=self.api_response_three["targets"][1]["location"]["city"],
+                    country=self.api_response_three["targets"][1]["location"][
+                        "country"
+                    ],
+                    download_size=0,
+                    download_size_unit=StorageUnit("B"),
+                    download_rate=0,
+                    download_rate_unit=NetworkUnit("bit/s"),
+                    elapsed_time=0,
+                    elapsed_time_unit=TimeUnit("s"),
+                    errors=[],
+                ),
+                LatencyMeasurementResult(
+                    id="1",
+                    host="afakeurl.1.notreal.net",
+                    minimum_latency=0,
+                    average_latency=0,
+                    maximum_latency=0,
+                    median_deviation=0,
+                    packets_transmitted=0,
+                    packets_received=0,
+                    packets_lost=0,
+                    packets_lost_unit=RatioUnit("%"),
+                    elapsed_time=0,
+                    elapsed_time_unit=TimeUnit("d"),
+                    errors=[],
+                ),
+            ],
+            [
+                NetflixFastThreadResult(
+                    id="1",
+                    host="afakeurl.1.notreal.net",
+                    city=self.api_response_three["targets"][2]["location"]["city"],
+                    country=self.api_response_three["targets"][2]["location"][
+                        "country"
+                    ],
+                    download_size=0,
+                    download_size_unit=StorageUnit("B"),
+                    download_rate=0,
+                    download_rate_unit=NetworkUnit("bit/s"),
+                    elapsed_time=0,
+                    elapsed_time_unit=TimeUnit("s"),
+                    errors=[],
+                ),
+                LatencyMeasurementResult(
+                    id="1",
+                    host="afakeurl.1.notreal.net",
+                    minimum_latency=0,
+                    average_latency=0,
+                    maximum_latency=0,
+                    median_deviation=0,
+                    packets_transmitted=0,
+                    packets_received=0,
+                    packets_lost=0,
+                    packets_lost_unit=RatioUnit("%"),
+                    elapsed_time=0,
+                    elapsed_time_unit=TimeUnit("d"),
+                    errors=[],
+                ),
+            ],
         ]
 
     @mock.patch(
@@ -122,12 +196,12 @@ class NetflixResultTestCase(TestCase):
     def test_measure(self, mock_get_url_result, mock_get_fast_result):
         mock_get_url_result.side_effect = self.thread_result_three_list
         mock_get_fast_result.return_value = self.fast_result_three
-        assert self.nft.measure() == [
-            self.fast_result_three,
-            self.thread_result_three_list[0],
-            self.thread_result_three_list[1],
-            self.thread_result_three_list[2],
-        ]
+        assert self.nft.measure() == (
+            [self.fast_result_three]
+            + self.thread_result_three_list[0]
+            + self.thread_result_three_list[1]
+            + self.thread_result_three_list[2]
+        )
 
     @mock.patch(
         "measurement.plugins.netflix_fast.measurements.NetflixFastMeasurement._manage_threads"
@@ -245,8 +319,8 @@ class NetflixResultTestCase(TestCase):
             packets_received=0,
             packets_lost=0,
             packets_lost_unit=RatioUnit("%"),
-            time=0,
-            time_unit=TimeUnit("d"),
+            elapsed_time=0,
+            elapsed_time_unit=TimeUnit("d"),
             errors=[],
         )
         mock_latency_measure.return_value = [mock_latency_result]
@@ -255,6 +329,7 @@ class NetflixResultTestCase(TestCase):
             "location": {"city": "Foreign City One", "country": "Foreign Country One"},
             "download_size": 0,
             "download_rate": 0,
+            "elapsed_time": 0,
         }
         assert (
             self.nft._get_url_result(mock_thread_result)
